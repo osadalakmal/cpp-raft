@@ -16,7 +16,7 @@
 #include <assert.h>
 
 #include "raft.h"
-#include "raft_log.h"
+#include "raft_logger.h"
 
 #define INITIAL_CAPACITY 10
 #define in(x) ((log_private_t*)x)

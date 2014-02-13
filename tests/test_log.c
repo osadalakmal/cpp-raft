@@ -8,7 +8,7 @@
 #include "CuTest.h"
 
 #include "raft.h"
-#include "raft_log.h"
+#include "raft_logger.h"
 #include "raft_private.h"
 
 void TestLog_new_is_empty(CuTest * tc)

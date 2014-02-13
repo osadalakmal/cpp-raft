@@ -8,7 +8,7 @@
 #include "CuTest.h"
 
 #include "raft.h"
-#include "raft_log.h"
+#include "raft_logger.h"
 #include "raft_private.h"
 #include "mock_send_functions.h"
 
