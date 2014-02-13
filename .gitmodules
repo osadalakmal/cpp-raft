@@ -1,0 +1,3 @@
+[submodule "CLinkedListQueue"]
+	path = CLinkedListQueue
+	url = https://github.com/willemt/CLinkedListQueue.git

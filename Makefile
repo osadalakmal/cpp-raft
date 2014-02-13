@@ -10,12 +10,8 @@ CCFLAGS = -g -O2 -Werror -Werror=return-type -Werror=uninitialized -Wcast-align 
 
 all: tests_main
 
-clinkedlistqueue:
-	mkdir -p $(LLQUEUE_DIR)/.git
-	git --git-dir=$(LLQUEUE_DIR)/.git init 
-	pushd $(LLQUEUE_DIR); git pull git@github.com:willemt/CLinkedListQueue.git; popd
-
-download-contrib: clinkedlistqueue
+download-contrib:
+	git submodule update CLinkedListQueue
 
 $(TEST_DIR)/main_test.c:
 	if test -d $(LLQUEUE_DIR); \
