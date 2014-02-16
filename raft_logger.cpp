@@ -6,10 +6,11 @@
 using namespace std;
 
 RaftLogger::RaftLogger() {
-    size = INITIAL_CAPACITY;
+  //@TODO Contstantize this
+    size = 10; //INITIAL_CAPACITY;
     count = 0;
     back = front = 0;
-    entries = calloc(1,sizeof(raft_entry_t) * me->size);
+    entries = reinterpret_cast<raft_entry_t*>(calloc(1,sizeof(raft_entry_t) * size));
 }
 
 void RaftLogger::ensurecapacity() {

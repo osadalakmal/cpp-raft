@@ -1,7 +1,7 @@
 #ifndef RAFT_LOGGER_H
 #define RAFT_LOGGER_H
 
-#include "include/raft.h"
+#include "raft.h"
 
 class RaftLogger {
     
@@ -15,6 +15,8 @@ class RaftLogger {
      * @breif This function when called will ensure that we have enough capacity in the current logger state
      */
     void ensurecapacity();
+
+  public:
 
     /**
      * @brief The default constructor

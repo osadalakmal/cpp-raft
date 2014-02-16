@@ -22,6 +22,9 @@
 #include "raft_logger.h"
 #include "raft_private.h"
 
+int raft_get_commit_idx(raft_server_t* me_);
+int raft_get_state(raft_server_t* me_);
+
 static void __log(raft_server_t *me_, void *src, const char *fmt, ...)
 {
     raft_server_private_t* me = (void*)me_;
@@ -49,7 +52,7 @@ raft_server_t* raft_new()
     me->timeout_elapsed = 0;
     me->request_timeout = 200;
     me->election_timeout = 1000;
-    me->log = log_new();
+    me->log = new RaftLogger();
     raft_set_state((void*)me, RAFT_STATE_FOLLOWER);
     return (void*)me;
 }
@@ -67,7 +70,7 @@ void raft_free(raft_server_t* me_)
 {
     raft_server_private_t* me = (void*)me_;
 
-    log_free(me->log);
+    delete me->log;
     free(me_);
 }
 
@@ -173,7 +176,7 @@ int raft_periodic(raft_server_t* me_, int msec_since_last_period)
 raft_entry_t* raft_get_entry_from_idx(raft_server_t* me_, int etyidx)
 {
     raft_server_private_t* me = (void*)me_;
-    return log_get_from_idx(me->log, etyidx);
+    return me->log->log_get_from_idx(etyidx);
 }
 
 int raft_recv_appendentries_response(raft_server_t* me_,
@@ -191,13 +194,13 @@ int raft_recv_appendentries_response(raft_server_t* me_,
         int i;
 
         for (i=r->first_idx; i<=r->current_idx; i++)
-            log_mark_node_has_committed(me->log, i);
+            me->log->log_mark_node_has_committed(i);
 
         while (1)
         {
             raft_entry_t* e;
 
-            e = log_get_from_idx(me->log, me->last_applied_idx + 1);
+            e = me->log->log_get_from_idx(me->last_applied_idx + 1);
 
             /* majority has this */
             if (e && me->num_nodes / 2 <= e->num_nodes)
@@ -282,7 +285,7 @@ int raft_recv_appendentries(
             raft_entry_t* e2;
             if ((e2 = raft_get_entry_from_idx(me_, ae->prev_log_idx+1)))
             {
-                log_delete(me->log, ae->prev_log_idx+1);
+                me->log->log_delete(ae->prev_log_idx+1);
             }
         }
         else
@@ -300,7 +303,7 @@ int raft_recv_appendentries(
     {
         raft_entry_t* e;
 
-        if ((e = log_peektail(me->log)))
+        if ((e = me->log->log_peektail()))
         {
             raft_set_commit_idx(me_, e->id < ae->leader_commit ?
                     e->id : ae->leader_commit);
@@ -480,7 +483,7 @@ int raft_append_entry(raft_server_t* me_, raft_entry_t* c)
 {
     raft_server_private_t* me = (void*)me_;
 
-    if (1 == log_append_entry(me->log,c))
+    if (1 == me->log->log_append_entry(c))
     {
         me->current_idx += 1;
         return 1;
@@ -493,7 +496,7 @@ int raft_apply_entry(raft_server_t* me_)
     raft_server_private_t* me = (void*)me_;
     raft_entry_t* e;
 
-    if (!(e = log_get_from_idx(me->log, me->last_applied_idx+1)))
+    if (!(e = me->log->log_get_from_idx(me->last_applied_idx+1)))
         return 0;
 
     __log(me_, NULL, "applying log: %d", me->last_applied_idx);

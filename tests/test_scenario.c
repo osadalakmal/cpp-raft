@@ -32,10 +32,10 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
         sender_set_raft(sender[j], r[j]);
         raft_set_election_timeout(r[j], 500);
         raft_set_configuration(r[j],cfg,j);
-        raft_set_callbacks(r[j],&((raft_cbs_t) {
-            .send = sender_send,
-            .log = NULL
-            }), sender[j]);
+        raft_cbs_t* cbs = new raft_cbs_t();
+        cbs->send = sender_send;
+        cbs->log = NULL;
+        raft_set_callbacks(r[j], cbs, sender[j]);
     }
 
     for (i=0;i<20;i++)

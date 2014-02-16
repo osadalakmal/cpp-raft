@@ -20,6 +20,7 @@
 #include "raft.h"
 #include "raft_logger.h"
 #include "raft_private.h"
+#include "raft_server_properties.h"
 
 void raft_set_election_timeout(raft_server_t* me_, int millisec)
 {
@@ -62,7 +63,7 @@ int raft_get_timeout_elapsed(raft_server_t* me_)
 int raft_get_log_count(raft_server_t* me_)
 {
     raft_server_private_t* me = (void*)me_;
-    return log_count(me->log);
+    return me->log->log_count();
 }
 
 int raft_get_voted_for(raft_server_t* me_)
