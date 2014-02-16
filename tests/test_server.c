@@ -11,6 +11,7 @@
 #include "raft_logger.h"
 #include "raft_server_properties.h"
 #include "raft_server.h"
+#include "raft_node.h"
 #include "raft_private.h"
 #include "mock_send_functions.h"
 
@@ -1426,7 +1427,7 @@ void TestRaft_leader_when_becomes_leader_all_nodes_have_nextidx_equal_to_lastlog
         if (i==0) continue;
         raft_node_t* p = raft_get_node(r,i);
         CuAssertTrue(tc, raft_get_current_idx(r) + 1 ==
-                raft_node_get_next_idx(p));
+                reinterpret_cast<RaftNode*>(p)->raft_node_get_next_idx());
     }
 }
 
@@ -1537,7 +1538,7 @@ void TestRaft_leader_sends_appendentries_with_NextIdx_when_PrevIdx_gt_NextIdx(Cu
 
     void* p;
     p = raft_get_node(r,0);
-    raft_node_set_next_idx(p, 4);
+    reinterpret_cast<RaftNode*>(p)->raft_node_set_next_idx(4);
 
     /* receive appendentries messages */
     raft_send_appendentries(r,0);

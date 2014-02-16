@@ -9,14 +9,15 @@
 
 #include "raft.h"
 #include "raft_logger.h"
+#include "raft_node.h"
 #include "raft_private.h"
 
 void TestRaft_node_set_nextIdx(CuTest * tc)
 {
-    raft_node_t *p;
+    RaftNode *p;
 
-    p = raft_node_new((void*)1);
-    raft_node_set_next_idx(p,3);
-    CuAssertTrue(tc, 3 == raft_node_get_next_idx(p));
+    p = new RaftNode((void*)1);
+    p->raft_node_set_next_idx(3);
+    CuAssertTrue(tc, 3 == p->raft_node_get_next_idx());
 }
 

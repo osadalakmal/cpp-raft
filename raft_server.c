@@ -20,6 +20,7 @@
 
 #include "raft.h"
 #include "raft_logger.h"
+#include "raft_node.h"
 #include "raft_private.h"
 
 int raft_get_commit_idx(raft_server_t* me_);
@@ -97,7 +98,7 @@ void raft_become_leader(raft_server_t* me_)
     {
         if (me->nodeid == i) continue;
         raft_node_t* p = raft_get_node(me_, i);
-        raft_node_set_next_idx(p, raft_get_current_idx(me_)+1);
+        reinterpret_cast<RaftNode*>(p)->raft_node_set_next_idx(raft_get_current_idx(me_)+1);
         raft_send_appendentries(me_, i);
     }
 }
@@ -217,10 +218,11 @@ int raft_recv_appendentries_response(raft_server_t* me_,
     {
         /* If AppendEntries fails because of log inconsistency:
            decrement nextIndex and retry (§5.3) */
-        assert(0 <= raft_node_get_next_idx(p));
+        RaftNode* p_raftnode = reinterpret_cast<RaftNode*>(p);
+        assert(0 <= p_raftnode->raft_node_get_next_idx());
         // TODO does this have test coverage?
         // TODO can jump back to where node is different instead of iterating
-        raft_node_set_next_idx(p, raft_node_get_next_idx(p)-1);
+        p_raftnode->raft_node_set_next_idx(p_raftnode->raft_node_get_next_idx()-1);
         raft_send_appendentries(me_, node);
     }
 
@@ -523,7 +525,7 @@ void raft_send_appendentries(raft_server_t* me_, int node)
 
     ae.term = me->current_term;
     ae.leader_id = me->nodeid;
-    ae.prev_log_term = raft_node_get_next_idx(p);
+    ae.prev_log_term = reinterpret_cast<RaftNode*>(p)->raft_node_get_next_idx();
     // TODO:
     ae.prev_log_idx = 0;
     ae.n_entries = 0;
@@ -555,7 +557,7 @@ void raft_set_configuration(raft_server_t* me_,
         num_nodes++;
         me->nodes = realloc(me->nodes,sizeof(raft_node_t*) * num_nodes);
         me->num_nodes = num_nodes;
-        me->nodes[num_nodes-1] = raft_node_new(nodes->udata_address);
+        me->nodes[num_nodes-1] = new RaftNode(nodes->udata_address);
     }
     me->votes_for_me = calloc(num_nodes, sizeof(int));
     me->nodeid = my_idx;
