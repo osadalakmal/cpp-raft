@@ -15,11 +15,12 @@
 #include "linked_list_queue.h"
 
 #include "raft.h"
+#include "raft_server.h"
 
 typedef struct {
     void* outbox;
     void* inbox;
-    void* raft;
+    RaftServer* raft;
 } sender_t;
 
 typedef struct {
@@ -50,7 +51,7 @@ int sender_send(void* caller, void* udata, int peer, int type,
     m->type = type;
     m->len = len;
     m->data = malloc(len);
-    m->sender = raft_get_nodeid(udata);
+    m->sender = reinterpret_cast<RaftServer*>(udata)->raft_get_nodeid();
     memcpy(m->data,data,len);
     llqueue_offer(me->outbox,m);
 
@@ -86,7 +87,7 @@ void* sender_poll_msg_data(void* s)
 void sender_set_raft(void* s, void* r)
 {
     sender_t* me = s;
-    me->raft = r;
+    me->raft = reinterpret_cast<RaftServer*>(r);
 }
 
 int sender_msgs_available(void* s)
@@ -106,22 +107,22 @@ void sender_poll_msgs(void* s)
         switch (m->type)
         {
             case RAFT_MSG_APPENDENTRIES:
-                raft_recv_appendentries(me->raft, m->sender, m->data);
+                me->raft->raft_recv_appendentries(m->sender, m->data);
                 break;
             case RAFT_MSG_APPENDENTRIES_RESPONSE:
-                raft_recv_appendentries_response(me->raft, m->sender, m->data);
+                me->raft->raft_recv_appendentries_response(m->sender, m->data);
                 break;
             case RAFT_MSG_REQUESTVOTE:
-                raft_recv_requestvote(me->raft, m->sender, m->data);
+                me->raft->raft_recv_requestvote(m->sender, m->data);
                 break;
             case RAFT_MSG_REQUESTVOTE_RESPONSE:
-                raft_recv_requestvote_response(me->raft, m->sender, m->data);
+                me->raft->raft_recv_requestvote_response(m->sender, m->data);
                 break;
             case RAFT_MSG_ENTRY:
-                raft_recv_entry(me->raft, m->sender, m->data);
+                me->raft->raft_recv_entry(m->sender, m->data);
                 break;
             case RAFT_MSG_ENTRY_RESPONSE:
-                //raft_recv_entry_response(me->raft, m->sender, m->data);
+                //me->raft->raft_recv_entry_response(m->sender, m->data);
                 break;
 
         }

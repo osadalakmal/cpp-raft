@@ -8,6 +8,7 @@
 #include "CuTest.h"
 
 #include "raft.h"
+#include "raft_server.h"
 #include "raft_logger.h"
 #include "raft_private.h"
 #include "mock_send_functions.h"
@@ -15,7 +16,7 @@
 void TestRaft_scenario_leader_appears(CuTest * tc)
 {
     int i,j;
-    raft_server_t *r[3];
+    RaftServer *r[3];
     void* sender[3];
     raft_node_configuration_t cfg[] = {
                 {(-1),(void*)1},
@@ -27,15 +28,15 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
 
     for (j=0;j<3;j++)
     {
-        r[j] = raft_new();
+        r[j] = new RaftServer();
         sender[j] = sender_new(cfg[j].udata_address);
         sender_set_raft(sender[j], r[j]);
-        raft_set_election_timeout(r[j], 500);
-        raft_set_configuration(r[j],cfg,j);
+        r[j]->raft_set_election_timeout(500);
+        r[j]->raft_set_configuration(cfg,j);
         raft_cbs_t* cbs = new raft_cbs_t();
         cbs->send = sender_send;
         cbs->log = NULL;
-        raft_set_callbacks(r[j], cbs, sender[j]);
+        r[j]->raft_set_callbacks(cbs, sender[j]);
     }
 
     for (i=0;i<20;i++)
@@ -50,13 +51,13 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
                     goto one_more_time;
 
         for (j=0;j<3;j++)
-            raft_periodic(r[j], 100);
+            r[j]->raft_periodic(100);
     }
 
     int leaders = 0;
     for (j=0;j<3;j++)
     {
-        if (raft_is_leader(r[j]))
+        if (r[j]->raft_is_leader())
             leaders += 1;
     }
 

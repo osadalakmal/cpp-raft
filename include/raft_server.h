@@ -68,8 +68,6 @@ class RaftServer {
       msg_appendentries_t* ae);
   int raft_recv_requestvote( int node, msg_requestvote_t* vr);
 
-  int raft_votes_is_majority(const int num_nodes, const int nvotes);
-
   int raft_recv_requestvote_response( int node,
       msg_requestvote_response_t* r);
 
