@@ -7,11 +7,11 @@
 #include <stdint.h>
 #include "CuTest.h"
 
-#include "raft.h"
-#include "raft_logger.h"
-#include "raft_server.h"
-#include "raft_node.h"
-#include "raft_private.h"
+#include "../raft.h"
+#include "../raft_logger.h"
+#include "../raft_server.h"
+#include "../raft_node.h"
+#include "../raft_private.h"
 #include "mock_send_functions.h"
 
 // TODO: leader doesn't timeout and cause election
