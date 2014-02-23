@@ -2,4 +2,5 @@
 *.swo
 *.o
 *.pyc
-
+*.gcda
+*.gcno

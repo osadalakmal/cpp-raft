@@ -9,10 +9,10 @@ class RaftNode {
 public:
 
   RaftNode(void* udata);
-  int raft_node_is_leader();
-  int raft_node_get_next_idx();
-  void raft_node_set_next_idx(int nextIdx);
-  void* raft_node_get_udata();
+  int is_leader();
+  int get_next_idx();
+  void set_next_idx(int nextIdx);
+  void* get_udata();
 
 };
 

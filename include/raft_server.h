@@ -50,93 +50,93 @@ class RaftServer {
 
   virtual ~RaftServer();
 
-  void raft_set_callbacks(raft_cbs_t* funcs, void* cb_ctx);
+  void set_callbacks(raft_cbs_t* funcs, void* cb_ctx);
 
-  void raft_election_start();
+  void election_start();
 
-  void raft_become_leader();
+  void become_leader();
 
-  void raft_become_candidate();
-  void raft_become_follower();
+  void become_candidate();
+  void become_follower();
 
-  int raft_periodic( int msec_since_last_period);
-  raft_entry_t* raft_get_entry_from_idx( int etyidx);
+  int periodic( int msec_since_last_period);
+  raft_entry_t* get_entry_from_idx( int etyidx);
 
-  int raft_recv_appendentries_response(int node, msg_appendentries_response_t* r);
-  int raft_recv_appendentries(
+  int recv_appendentries_response(int node, msg_appendentries_response_t* r);
+  int recv_appendentries(
       const int node,
       msg_appendentries_t* ae);
-  int raft_recv_requestvote( int node, msg_requestvote_t* vr);
+  int recv_requestvote( int node, msg_requestvote_t* vr);
 
-  int raft_recv_requestvote_response( int node,
+  int recv_requestvote_response( int node,
       msg_requestvote_response_t* r);
 
-  int raft_send_entry_response(        int node, int etyid, int was_committed);
+  int send_entry_response(        int node, int etyid, int was_committed);
 
-  int raft_recv_entry( int node, msg_entry_t* e);
+  int recv_entry( int node, msg_entry_t* e);
 
-  int raft_send_requestvote( int node);
+  int send_requestvote( int node);
 
-  int raft_append_entry( raft_entry_t* c);
+  int append_entry( raft_entry_t* c);
 
-  int raft_apply_entry();
+  int apply_entry();
 
-  void raft_send_appendentries( int node);
+  void send_appendentries( int node);
 
-  void raft_send_appendentries_all();
-  void raft_set_configuration(        raft_node_configuration_t* nodes, int my_idx);
+  void send_appendentries_all();
+  void set_configuration(        raft_node_configuration_t* nodes, int my_idx);
 
-  int raft_get_nvotes_for_me();
+  int get_nvotes_for_me();
 
-  void raft_vote( int node);
+  void vote( int node);
 
-  raft_node_t* raft_get_node(int nodeid);
+  raft_node_t* get_node(int nodeid);
 
-  int raft_is_follower();
+  int is_follower();
 
-  int raft_is_leader();
+  int is_leader();
 
-  int raft_is_candidate();
+  int is_candidate();
 
-  void raft_set_election_timeout( int millisec);
+  void set_election_timeout( int millisec);
 
-  void raft_set_request_timeout( int millisec);
+  void set_request_timeout( int millisec);
 
-  int raft_get_nodeid();
+  int get_nodeid();
 
-  int raft_get_election_timeout();
+  int get_election_timeout();
 
-  int raft_get_request_timeout();
+  int get_request_timeout();
 
-  int raft_get_num_nodes();
+  int get_num_nodes();
 
-  int raft_get_timeout_elapsed();
+  int get_timeout_elapsed();
 
-  int raft_get_log_count();
+  int get_log_count();
 
-  int raft_get_voted_for();
+  int get_voted_for();
 
-  void raft_set_current_term( int term);
+  void set_current_term( int term);
 
-  int raft_get_current_term();
+  int get_current_term();
 
-  void raft_set_current_idx( int idx);
+  void set_current_idx( int idx);
 
-  int raft_get_current_idx();
+  int get_current_idx();
 
-  int raft_get_my_id();
+  int get_my_id();
 
-  void raft_set_commit_idx( int idx);
+  void set_commit_idx( int idx);
 
-  void raft_set_last_applied_idx( int idx);
+  void set_last_applied_idx( int idx);
 
-  int raft_get_last_applied_idx();
+  int get_last_applied_idx();
 
-  int raft_get_commit_idx();
+  int get_commit_idx();
 
-  void raft_set_state( int state);
+  void set_state( int state);
 
-  int raft_get_state();
+  int get_state();
 
 };
 

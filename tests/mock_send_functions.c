@@ -51,7 +51,7 @@ int sender_send(void* caller, void* udata, int peer, int type,
     m->type = type;
     m->len = len;
     m->data = malloc(len);
-    m->sender = reinterpret_cast<RaftServer*>(udata)->raft_get_nodeid();
+    m->sender = reinterpret_cast<RaftServer*>(udata)->get_nodeid();
     memcpy(m->data,data,len);
     llqueue_offer(me->outbox,m);
 
@@ -107,22 +107,22 @@ void sender_poll_msgs(void* s)
         switch (m->type)
         {
             case RAFT_MSG_APPENDENTRIES:
-                me->raft->raft_recv_appendentries(m->sender, m->data);
+                me->raft->recv_appendentries(m->sender, m->data);
                 break;
             case RAFT_MSG_APPENDENTRIES_RESPONSE:
-                me->raft->raft_recv_appendentries_response(m->sender, m->data);
+                me->raft->recv_appendentries_response(m->sender, m->data);
                 break;
             case RAFT_MSG_REQUESTVOTE:
-                me->raft->raft_recv_requestvote(m->sender, m->data);
+                me->raft->recv_requestvote(m->sender, m->data);
                 break;
             case RAFT_MSG_REQUESTVOTE_RESPONSE:
-                me->raft->raft_recv_requestvote_response(m->sender, m->data);
+                me->raft->recv_requestvote_response(m->sender, m->data);
                 break;
             case RAFT_MSG_ENTRY:
-                me->raft->raft_recv_entry(m->sender, m->data);
+                me->raft->recv_entry(m->sender, m->data);
                 break;
             case RAFT_MSG_ENTRY_RESPONSE:
-                //me->raft->raft_recv_entry_response(m->sender, m->data);
+                //me->raft->recv_entry_response(m->sender, m->data);
                 break;
 
         }

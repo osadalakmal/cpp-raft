@@ -17,7 +17,7 @@ void TestRaft_node_set_nextIdx(CuTest * tc)
     RaftNode *p;
 
     p = new RaftNode((void*)1);
-    p->raft_node_set_next_idx(3);
-    CuAssertTrue(tc, 3 == p->raft_node_get_next_idx());
+    p->set_next_idx(3);
+    CuAssertTrue(tc, 3 == p->get_next_idx());
 }
 

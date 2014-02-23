@@ -31,12 +31,12 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
         r[j] = new RaftServer();
         sender[j] = sender_new(cfg[j].udata_address);
         sender_set_raft(sender[j], r[j]);
-        r[j]->raft_set_election_timeout(500);
-        r[j]->raft_set_configuration(cfg,j);
+        r[j]->set_election_timeout(500);
+        r[j]->set_configuration(cfg,j);
         raft_cbs_t* cbs = new raft_cbs_t();
         cbs->send = sender_send;
         cbs->log = NULL;
-        r[j]->raft_set_callbacks(cbs, sender[j]);
+        r[j]->set_callbacks(cbs, sender[j]);
     }
 
     for (i=0;i<20;i++)
@@ -51,13 +51,13 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
                     goto one_more_time;
 
         for (j=0;j<3;j++)
-            r[j]->raft_periodic(100);
+            r[j]->periodic(100);
     }
 
     int leaders = 0;
     for (j=0;j<3;j++)
     {
-        if (r[j]->raft_is_leader())
+        if (r[j]->is_leader())
             leaders += 1;
     }
 

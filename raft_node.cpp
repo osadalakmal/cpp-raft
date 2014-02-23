@@ -9,23 +9,23 @@
 RaftNode::RaftNode(void* udata) : d_udata(udata)
 { }
 
-int RaftNode::raft_node_is_leader()
+int RaftNode::is_leader()
 {
     // TODO
     return 0;
 }
 
-int RaftNode::raft_node_get_next_idx()
+int RaftNode::get_next_idx()
 {
     return next_idx;
 }
 
-void RaftNode::raft_node_set_next_idx(int nextIdx)
+void RaftNode::set_next_idx(int nextIdx)
 {
     next_idx = nextIdx;
 }
 
-void* RaftNode::raft_node_get_udata()
+void* RaftNode::get_udata()
 {
     return d_udata;
 }
