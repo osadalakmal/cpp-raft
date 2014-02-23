@@ -6,7 +6,7 @@ GCOV_OUTPUT = *.gcda *.gcno *.gcov
 GCOV_CCFLAGS = -fprofile-arcs -ftest-coverage
 SHELL  = /bin/bash
 CC     = g++
-CCFLAGS = -g -O2 $(GCOV_CCFLAGS) -I$(LLQUEUE_DIR) -Iinclude -w -fpermissive  #-fno-omit-frame-pointer -fno-common -fsigned-char
+CCFLAGS = -g -O2 $(GCOV_CCFLAGS) -I$(LLQUEUE_DIR) -I./ -w -fpermissive  #-fno-omit-frame-pointer -fno-common -fsigned-char
 
 all: tests_main
 
