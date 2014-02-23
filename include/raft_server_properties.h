@@ -1,6 +1,0 @@
-#ifndef RAFT_SERVER_PROPERTIES_H
-#define RAFT_SERVER_PROPERTIES_H
-
-#include "raft.h"
-
-#endif //RAFT_SERVER_PROPERTIES_H
