@@ -1,6 +1,7 @@
 #ifndef RAFT_SERVER_H
 #define RAFT_SERVER_H
 
+#include "state_mach.h"
 #include "raft.h"
 
 class RaftLogger;
@@ -22,7 +23,7 @@ class RaftServer {
 
 
   /* follower/leader/candidate indicator */
-  int state;
+  Raft::State d_state;
 
   /* most recently append idx, also indicates size of log */
   int current_idx;
@@ -218,9 +219,7 @@ class RaftServer {
 
   int get_commit_idx();
 
-  void set_state( int state);
-
-  int get_state();
+  inline const Raft::State& get_state() { return d_state; };
 
 };
 

@@ -17,7 +17,6 @@
 // TODO: leader doesn't timeout and cause election
 
 int raft_get_commit_idx(raft_server_t* me_);
-int raft_get_state(raft_server_t* me_);
 
 void TestRaft_server_voted_for_records_who_we_voted_for(CuTest * tc)
 {
@@ -79,8 +78,8 @@ void TestRaft_set_state(CuTest * tc)
     RaftServer *r;
 
     r = new RaftServer();
-    r->set_state(RAFT_STATE_LEADER);
-    CuAssertTrue(tc, RAFT_STATE_LEADER == r->get_state());
+    r->get_state().set(RAFT_STATE_LEADER);
+    CuAssertTrue(tc, RAFT_STATE_LEADER == r->get_state().get());
 }
 
 void TestRaft_server_starts_as_follower(CuTest * tc)
@@ -88,7 +87,7 @@ void TestRaft_server_starts_as_follower(CuTest * tc)
     RaftServer *r;
 
     r = new RaftServer();
-    CuAssertTrue(tc, RAFT_STATE_FOLLOWER == r->get_state());
+    CuAssertTrue(tc, RAFT_STATE_FOLLOWER == r->get_state().get());
 }
 
 void TestRaft_server_starts_with_election_timeout_of_1000ms(CuTest * tc)
@@ -246,7 +245,7 @@ void TestRaft_server_increment_lastApplied_when_lastApplied_lt_commitidx(CuTest*
 
     r = new RaftServer();
     /* must be follower */
-    r->set_state(RAFT_STATE_FOLLOWER);
+    r->get_state().set(RAFT_STATE_FOLLOWER);
     r->set_current_term(1);
     r->set_commit_idx(1);
     r->set_last_applied_idx(0);
@@ -505,7 +504,7 @@ void TestRaft_follower_becomes_follower_is_follower(CuTest * tc)
     r = new RaftServer();
 
     r->become_follower();
-    CuAssertTrue(tc, r->is_follower());
+    CuAssertTrue(tc, r->get_state().is_follower());
 }
 
 void TestRaft_follower_becomes_follower_clears_voted_for(CuTest * tc)
@@ -614,7 +613,7 @@ void TestRaft_follower_doesnt_log_after_appendentry_if_no_entries_are_specified(
     r = new RaftServer();
     r->set_configuration(cfg,0);
 
-    r->set_state(RAFT_STATE_FOLLOWER);
+    r->get_state().set(RAFT_STATE_FOLLOWER);
 
     /*  log size s */
     CuAssertTrue(tc, 0 == r->get_log_count());
@@ -656,7 +655,7 @@ void TestRaft_follower_increases_log_after_appendentry(CuTest * tc)
     sender = sender_new(NULL);
     r->set_callbacks(&funcs,sender);
 
-    r->set_state(RAFT_STATE_FOLLOWER);
+    r->get_state().set(RAFT_STATE_FOLLOWER);
 
     /*  log size s */
     CuAssertTrue(tc, 0 == r->get_log_count());
@@ -984,7 +983,7 @@ void TestRaft_follower_becomes_candidate_when_election_timeout_occurs(CuTest * t
     r->periodic(1001);
 
     /* is a candidate now */
-    CuAssertTrue(tc, 1 == r->is_candidate());
+    CuAssertTrue(tc, 1 == r->get_state().is_candidate());
 }
 
 /* Candidate 5.2 */
@@ -1038,7 +1037,7 @@ void TestRaft_candidate_becomes_candidate_is_candidate(CuTest * tc)
     r = new RaftServer();
 
     r->become_candidate();
-    CuAssertTrue(tc, r->is_candidate());
+    CuAssertTrue(tc, r->get_state().is_candidate());
 }
 
 /* Candidate 5.2 */
@@ -1177,7 +1176,7 @@ void TestRaft_candidate_election_timeout_and_no_leader_results_in_new_election(C
 
     /*  receiving this vote gives the server majority */
 //    r->recv_requestvote_response(1,&vr);
-//    CuAssertTrue(tc, 1 == r->is_leader());
+//    CuAssertTrue(tc, 1 == r->get_state().is_leader());
 }
 
 /* Candidate 5.2 */
@@ -1220,12 +1219,12 @@ void TestRaft_candidate_receives_majority_of_votes_becomes_leader(CuTest * tc)
     /* get one vote */
     r->recv_requestvote_response(1,&vr);
     CuAssertTrue(tc, 2 == r->get_nvotes_for_me());
-    CuAssertTrue(tc, 0 == r->is_leader());
+    CuAssertTrue(tc, 0 == r->get_state().is_leader());
 
     /* get another vote
      * now has majority (ie. 3/5 votes) */
     r->recv_requestvote_response(2,&vr);
-    CuAssertTrue(tc, 1 == r->is_leader());
+    CuAssertTrue(tc, 1 == r->get_state().is_leader());
 }
 
 /* Candidate 5.2 */
@@ -1283,7 +1282,7 @@ void TestRaft_candidate_requestvote_includes_logidx(CuTest * tc)
     sender = sender_new(NULL);
     r = new RaftServer();
     r->set_configuration(cfg,0);
-    r->set_state(RAFT_STATE_CANDIDATE);
+    r->get_state().set(RAFT_STATE_CANDIDATE);
 
     r->set_callbacks(&funcs,sender);
     r->set_current_term(5);
@@ -1319,15 +1318,15 @@ void TestRaft_candidate_recv_appendentries_frm_leader_results_in_follower(CuTest
     r->set_configuration(cfg,0);
     r->set_callbacks(&funcs,sender);
 
-    r->set_state(RAFT_STATE_CANDIDATE);
-    CuAssertTrue(tc, 0 == r->is_follower());
+    r->get_state().set(RAFT_STATE_CANDIDATE);
+    CuAssertTrue(tc, 0 == r->get_state().is_follower());
 
     /* receive recent appendentries */
     msg_appendentries_t ae;
     memset(&ae,0,sizeof(msg_appendentries_t));
     ae.term = 1;
     r->recv_appendentries(1,&ae);
-    CuAssertTrue(tc, 1 == r->is_follower());
+    CuAssertTrue(tc, 1 == r->get_state().is_follower());
 }
 
 /* Candidate 5.2 */
@@ -1358,8 +1357,8 @@ void TestRaft_candidate_recv_appendentries_frm_invalid_leader_doesnt_result_in_f
     r->set_current_idx(2);
 
     /*  is a candidate */
-    r->set_state(RAFT_STATE_CANDIDATE);
-    CuAssertTrue(tc, 0 == r->is_follower());
+    r->get_state().set(RAFT_STATE_CANDIDATE);
+    CuAssertTrue(tc, 0 == r->get_state().is_follower());
 
     /*  invalid leader determined by "leaders" old log */
     memset(&ae,0,sizeof(msg_appendentries_t));
@@ -1369,7 +1368,7 @@ void TestRaft_candidate_recv_appendentries_frm_invalid_leader_doesnt_result_in_f
 
     /* appendentry from invalid leader doesn't make candidate become follower */
     r->recv_appendentries(1,&ae);
-    CuAssertTrue(tc, 1 == r->is_candidate());
+    CuAssertTrue(tc, 1 == r->get_state().is_candidate());
 }
 
 void TestRaft_leader_becomes_leader_is_leader(CuTest * tc)
@@ -1379,7 +1378,7 @@ void TestRaft_leader_becomes_leader_is_leader(CuTest * tc)
     r = new RaftServer();
 
     r->become_leader();
-    CuAssertTrue(tc, r->is_leader());
+    CuAssertTrue(tc, r->get_state().is_leader());
 }
 
 void TestRaft_leader_becomes_leader_clears_voted_for(CuTest * tc)
@@ -1417,7 +1416,7 @@ void TestRaft_leader_when_becomes_leader_all_nodes_have_nextidx_equal_to_lastlog
     r->set_configuration(cfg,0);
 
     /* candidate to leader */
-    r->set_state(RAFT_STATE_CANDIDATE);
+    r->get_state().set(RAFT_STATE_CANDIDATE);
     r->become_leader();
 
     int i;
@@ -1454,7 +1453,7 @@ void TestRaft_leader_when_it_becomes_a_leader_sends_empty_appendentries(CuTest *
     r->set_configuration(cfg,0);
 
     /* candidate to leader */
-    r->set_state(RAFT_STATE_CANDIDATE);
+    r->get_state().set(RAFT_STATE_CANDIDATE);
     r->become_leader();
 
     /* receive appendentries messages for both nodes */
@@ -1487,7 +1486,7 @@ void TestRaft_leader_responds_to_entry_msg_when_entry_is_committed(CuTest * tc)
     r->set_configuration(cfg,0);
 
     /* I am the leader */
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
     CuAssertTrue(tc, 0 == r->get_log_count());
 
     /* entry message */
@@ -1533,7 +1532,7 @@ void TestRaft_leader_sends_appendentries_with_NextIdx_when_PrevIdx_gt_NextIdx(Cu
     r->set_configuration(cfg,0);
 
     /* i'm leader */
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
 
     void* p;
     p = r->get_node(0);
@@ -1570,7 +1569,7 @@ void TestRaft_leader_retries_appendentries_with_decremented_NextIdx_log_inconsis
     r->set_configuration(cfg,0);
 
     /* i'm leader */
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
 
     /* receive appendentries messages */
     r->send_appendentries(0);
@@ -1600,7 +1599,7 @@ void TestRaft_leader_append_entry_to_log_increases_idxno(CuTest * tc)
 
     r = new RaftServer();
     r->set_configuration(cfg,0);
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
     CuAssertTrue(tc, 0 == r->get_log_count());
 
     r->recv_entry(1,&ety);
@@ -1627,7 +1626,7 @@ void T_estRaft_leader_doesnt_append_entry_if_unique_id_is_duplicate(CuTest * tc)
     r = new RaftServer();
     r->set_configuration(cfg,0);
 
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
     CuAssertTrue(tc, 0 == r->get_log_count());
 
     r->recv_entry(1,&ety);
@@ -1659,7 +1658,7 @@ void TestRaft_leader_increase_commit_idx_when_majority_have_entry_and_atleast_on
     r->set_callbacks(&funcs,sender);
 
     /* I'm the leader */
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
     r->set_current_term(1);
     r->set_commit_idx(0);
     /* the last applied idx will became 1, and then 2 */
@@ -1733,7 +1732,7 @@ void TestRaft_leader_steps_down_if_received_appendentries_is_newer_than_itself(C
     r = new RaftServer();
     r->set_configuration(cfg,0);
 
-    r->set_state(RAFT_STATE_LEADER);
+    r->get_state().set(RAFT_STATE_LEADER);
     r->set_current_term(5);
     r->set_current_idx(5);
     r->set_callbacks(&funcs,sender);
@@ -1744,7 +1743,7 @@ void TestRaft_leader_steps_down_if_received_appendentries_is_newer_than_itself(C
     ae.prev_log_term = 5;
     r->recv_appendentries(1,&ae);
 
-    CuAssertTrue(tc, 1 == r->is_follower());
+    CuAssertTrue(tc, 1 == r->get_state().is_follower());
 }
 
 /* TODO: If a server receives a request with a stale term number, it rejects the request. */

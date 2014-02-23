@@ -18,6 +18,7 @@
 /* for varags */
 #include <stdarg.h>
 
+#include "state_mach.h"
 #include "raft.h"
 #include "raft_server.h"
 #include "raft_logger.h"
@@ -43,7 +44,7 @@ RaftServer::RaftServer() {
   this->request_timeout = 200;
   this->election_timeout = 1000;
   this->log = new RaftLogger();
-  set_state(RAFT_STATE_FOLLOWER);
+  d_state.set(RAFT_STATE_FOLLOWER);
 }
 
 void RaftServer::set_callbacks(raft_cbs_t *funcs, void *cb_ctx) {
@@ -66,7 +67,7 @@ void RaftServer::become_leader() {
 
   __log(NULL, "becoming leader");
 
-  set_state(RAFT_STATE_LEADER);
+  d_state.set(RAFT_STATE_LEADER);
   this->voted_for = -1;
   for (i = 0; i < this->num_nodes; i++) {
     if (this->nodeid == i)
@@ -86,7 +87,7 @@ void RaftServer::become_candidate() {
   memset(this->votes_for_me, 0, sizeof(int) * this->num_nodes);
   this->current_term += 1;
   vote(this->nodeid);
-  set_state(RAFT_STATE_CANDIDATE);
+  d_state.set(RAFT_STATE_CANDIDATE);
 
   /* we need a random factor here to prevent simultaneous candidates */
   this->timeout_elapsed = rand() % 500;
@@ -103,7 +104,7 @@ void RaftServer::become_follower() {
 
   __log(NULL, "becoming follower");
 
-  set_state(RAFT_STATE_FOLLOWER);
+  d_state.set(RAFT_STATE_FOLLOWER);
   this->voted_for = -1;
 }
 
@@ -111,18 +112,20 @@ int RaftServer::periodic(int msec_since_last_period) {
 
   __log(NULL, "periodic elapsed time: %d", this->timeout_elapsed);
 
-  switch (this->state) {
+  switch (d_state.get()) {
   case RAFT_STATE_FOLLOWER:
     if (this->last_applied_idx < this->commit_idx) {
       if (0 == apply_entry())
         return 0;
     }
     break;
+  default:
+    break;
   }
 
   this->timeout_elapsed += msec_since_last_period;
 
-  if (this->state == RAFT_STATE_LEADER) {
+  if (d_state.get() == RAFT_STATE_LEADER) {
     if (this->request_timeout <= this->timeout_elapsed) {
       send_appendentries_all();
       this->timeout_elapsed = 0;
@@ -194,7 +197,7 @@ int RaftServer::recv_appendentries(const int node,
   r.term = this->current_term;
 
   /* we've found a leader who is legitimate */
-  if (is_leader() && this->current_term <= ae->term)
+  if (d_state.is_leader() && this->current_term <= ae->term)
     become_follower();
 
   /* 1. Reply false if term < currentTerm (§5.1) */
@@ -245,7 +248,7 @@ int RaftServer::recv_appendentries(const int node,
     }
   }
 
-  if (is_candidate())
+  if (d_state.is_candidate())
     become_follower();
 
   set_current_term(ae->term);
@@ -317,7 +320,7 @@ int RaftServer::recv_requestvote_response(int node,
   __log(NULL, "node responded to requestvote: %d status: %s", node,
         r->vote_granted == 1 ? "granted" : "not granted");
 
-  if (is_leader())
+  if (d_state.is_leader())
     return 0;
 
   assert(node < this->num_nodes);
@@ -478,18 +481,6 @@ raft_node_t *RaftServer::get_node(int nodeid) {
   return this->nodes[nodeid];
 }
 
-int RaftServer::is_follower() {
-  return get_state() == RAFT_STATE_FOLLOWER;
-}
-
-int RaftServer::is_leader() {
-  return get_state() == RAFT_STATE_LEADER;
-}
-
-int RaftServer::is_candidate() {
-  return get_state() == RAFT_STATE_CANDIDATE;
-}
-
 void RaftServer::set_election_timeout(int millisec) {
   this->election_timeout = millisec;
 }
@@ -529,9 +520,5 @@ void RaftServer::set_last_applied_idx(int idx) { this->last_applied_idx = idx;}
 int RaftServer::get_last_applied_idx() { return this->last_applied_idx; }
 
 int RaftServer::get_commit_idx() { return this->commit_idx; }
-
-void RaftServer::set_state(int state) { this->state = state; }
-
-int RaftServer::get_state() { return this->state; }
 
 /*--------------------------------------------------------------79-characters-*/

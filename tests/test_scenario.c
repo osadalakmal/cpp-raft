@@ -57,7 +57,7 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
     int leaders = 0;
     for (j=0;j<3;j++)
     {
-        if (r[j]->is_leader())
+        if (r[j]->get_state().is_leader())
             leaders += 1;
     }
 

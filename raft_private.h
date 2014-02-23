@@ -8,12 +8,6 @@
  * @version 0.1
  */
 
-enum {
-    RAFT_STATE_NONE,
-    RAFT_STATE_FOLLOWER,
-    RAFT_STATE_CANDIDATE,
-    RAFT_STATE_LEADER
-};
 
 class RaftLogger;
 
