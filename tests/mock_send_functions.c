@@ -44,10 +44,10 @@ void senders_new()
 int sender_send(void* caller, void* udata, int peer, int type,
         const unsigned char* data, int len)
 {
-    sender_t* me = caller;
+    sender_t* me = (sender_t*)caller;
     msg_t* m;
 
-    m = malloc(sizeof(msg_t));
+    m = (msg_t*)malloc(sizeof(msg_t));
     m->type = type;
     m->len = len;
     m->data = malloc(len);
@@ -57,7 +57,7 @@ int sender_send(void* caller, void* udata, int peer, int type,
 
     if (__nsenders > peer)
     {
-        llqueue_offer(__senders[peer]->inbox, m);
+        llqueue_offer((linked_list_queue_t*)__senders[peer]->inbox, m);
     }
 
     return 0;
@@ -77,7 +77,7 @@ void* sender_new(void* address)
 
 void* sender_poll_msg_data(void* s)
 {
-    sender_t* me = s;
+    sender_t* me = (sender_t*)s;
     msg_t* msg;
 
     msg = llqueue_poll(me->outbox);
@@ -86,20 +86,20 @@ void* sender_poll_msg_data(void* s)
 
 void sender_set_raft(void* s, void* r)
 {
-    sender_t* me = s;
+    sender_t* me = (sender_t*)s;
     me->raft = reinterpret_cast<RaftServer*>(r);
 }
 
 int sender_msgs_available(void* s)
 {
-    sender_t* me = s;
+    sender_t* me = (sender_t*)s;
 
     return 0 < llqueue_count(me->inbox);
 }
 
 void sender_poll_msgs(void* s)
 {
-    sender_t* me = s;
+    sender_t* me = (sender_t*)s;
     msg_t* m;
 
     while ((m = llqueue_poll(me->inbox)))

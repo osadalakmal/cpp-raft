@@ -21,7 +21,7 @@ typedef struct {
      * Examples of what this could be:
      * - void* pointing to implementor's networking data
      * - a (IP,Port) tuple */
-    void* udata_address;
+    int* udata_address;
 } raft_node_configuration_t;
 
 typedef struct {
@@ -142,14 +142,15 @@ typedef struct {
 } raft_cbs_t;
 
 typedef void* raft_server_t;
-typedef int* raft_entry_t;
+typedef int* raft_node_t;
+
 struct raft_entry_t {
     /* entry's term */
     unsigned int term;
     /* the entry's unique ID */
     unsigned int id;
     /* entry data */
-    unsigned char* data;
+    char* data;
     /* length of entry data */
     unsigned int len;
     /* number of nodes that have this entry */

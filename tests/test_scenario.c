@@ -13,15 +13,19 @@
 #include "raft_private.h"
 #include "mock_send_functions.h"
 
+static int NODE_ID_1 = 1;
+static int NODE_ID_2 = 2;
+static int NODE_ID_3 = 3;
+
 void TestRaft_scenario_leader_appears(CuTest * tc)
 {
     int i,j;
     RaftServer *r[3];
     void* sender[3];
     raft_node_configuration_t cfg[] = {
-                {(-1),(void*)1},
-                {(-1),(void*)2},
-                {(-1),(void*)3},
+                {(-1),&NODE_ID_1},
+                {(-1),&NODE_ID_2},
+                {(-1),&NODE_ID_3},
                 {(-1),NULL}};
 
     senders_new();

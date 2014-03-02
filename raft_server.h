@@ -7,6 +7,8 @@
 #include <vector>
 
 class RaftLogger;
+class RaftNode;
+typedef std::vector<RaftNode>::iterator NodeIter;
 
 class RaftServer {
 
@@ -40,8 +42,7 @@ class RaftServer {
   /// who has voted for me. This is an array with N = 'num_nodes' elements
   std::vector<int> votes_for_me;
 
-  std::vector<raft_node_t> nodes;
-  typedef std::vector<raft_node_t>::iterator NodeIter;
+  std::vector<RaftNode> nodes;
 
   int election_timeout;
   int request_timeout;
@@ -225,7 +226,9 @@ class RaftServer {
 
   int get_commit_idx();
 
-  inline const Raft::State& get_state() { return d_state; };
+  inline Raft::State& get_state() { return d_state; };
+
+  inline NodeIter get_last_node() { return nodes.end(); }
 
 };
 
