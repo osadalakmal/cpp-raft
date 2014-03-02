@@ -3,49 +3,55 @@
 
 #include "state_mach.h"
 #include "raft.h"
+#include <cstddef>
+#include <vector>
 
 class RaftLogger;
 
 class RaftServer {
 
   /* Persistent state: */
-  int current_term; //the server's best guess of what the current term is starts at zero
+  ///the server's best guess of what the current term is starts at zero
+  int current_term;
 
-  int voted_for; // The candidate the server voted for in its current term, or Nil if it hasn't voted for any.
+  /// The candidate the server voted for in its current term, or Nil if it hasn't voted for any.
+  int voted_for; 
 
-  RaftLogger* log; /* the log which is replicated */
+  /// the log which is replicated
+  RaftLogger* log; 
 
   /* Volatile state: */
+  /// idx of highest log entry known to be committed
+  int commit_idx; 
 
-  int commit_idx; // idx of highest log entry known to be committed
+  /// idx of highest log entry applied to state machine
+  int last_applied_idx; 
 
-  int last_applied_idx; // idx of highest log entry applied to state machine
 
-
-  /* follower/leader/candidate indicator */
+  /// follower/leader/candidate indicator
   Raft::State d_state;
 
-  /* most recently append idx, also indicates size of log */
+  /// most recently append idx, also indicates size of log
   int current_idx;
 
-  /* amount of time left till timeout */
+  /// amount of time left till timeout
   int timeout_elapsed;
 
-  /* who has voted for me. This is an array with N = 'num_nodes' elements */
-  int *votes_for_me;
+  /// who has voted for me. This is an array with N = 'num_nodes' elements
+  std::vector<int> votes_for_me;
 
-  raft_node_t* nodes;
-  int num_nodes;
+  std::vector<raft_node_t> nodes;
+  typedef std::vector<raft_node_t>::iterator NodeIter;
 
   int election_timeout;
   int request_timeout;
 
-  /* callbacks */
+  /// callbacks
   raft_cbs_t cb;
   void* cb_ctx;
 
-  /* my node ID */
-  int nodeid;
+  /// my node ID
+  size_t nodeid;
   public:
 
   /**
@@ -145,7 +151,7 @@ class RaftServer {
    * @param node The node's index
    * @return node pointed to by node index
    */
-  raft_node_t* get_node(int nodeid);
+  NodeIter get_node(size_t nodeid);
 
   /**
    * @return 1 if follower; 0 otherwise */
@@ -181,7 +187,7 @@ class RaftServer {
 
   /**
    * @return number of nodes that this server has */
-  int get_num_nodes();
+  size_t get_num_nodes();
 
   /**
    * @return currently elapsed timeout in milliseconds */

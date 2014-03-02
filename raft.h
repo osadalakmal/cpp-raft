@@ -142,9 +142,8 @@ typedef struct {
 } raft_cbs_t;
 
 typedef void* raft_server_t;
-typedef void* raft_node_t;
-
-typedef struct {
+typedef int* raft_entry_t;
+struct raft_entry_t {
     /* entry's term */
     unsigned int term;
     /* the entry's unique ID */
@@ -155,7 +154,7 @@ typedef struct {
     unsigned int len;
     /* number of nodes that have this entry */
     unsigned int num_nodes;
-} raft_entry_t;
+};
 
 
 #endif //INCLUDED_RAFT_H
