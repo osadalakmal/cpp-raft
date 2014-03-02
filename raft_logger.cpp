@@ -12,7 +12,7 @@ int RaftLogger::log_append_entry(raft_entry_t* c) {
     if (0 == c->id)
         return 0;
 
-    entries.push_back(c);
+    entries.push_back(new raft_entry_t(*c));
     entries.back()->num_nodes = 0;
     return 1;
 
@@ -36,22 +36,6 @@ void RaftLogger::log_delete(int idx)
   entries.erase(entries.begin() + idx - 1, entries.end());
 }
 
-/**
- * Remove oldest entry
- * @return oldest entry */
-void *RaftLogger::log_poll()
-{
-  if (entries.empty()) {
-    return NULL;
-  } else {
-    void* retVal = (void *) entries.back();
-    entries.pop_back();
-    return retVal;
-  }
-}
-
-/*
- * @return youngest entry */
 raft_entry_t *RaftLogger::log_peektail()
 {
   if (!entries.empty()) {

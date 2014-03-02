@@ -6,7 +6,6 @@
 
 class RaftLogger {
     
-    int base_log_idx;      /* we compact the log, and thus need to increment the base idx */ 
     std::vector<raft_entry_t*> entries;
 
     /**
@@ -43,12 +42,6 @@ class RaftLogger {
      * @brief Delete all logs from this log onwards 
      */
     void log_delete(int idx);
-
-    /**
-     * @brief Remove oldest entry
-     * @return oldest entry 
-     */
-    void* log_poll();
 
     /*
      * @return youngest entry 
