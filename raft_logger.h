@@ -2,14 +2,12 @@
 #define RAFT_LOGGER_H
 
 #include "raft.h"
+#include <vector>
 
 class RaftLogger {
     
-    int size;              /* size of array */
-    int count;             /* the amount of elements in the array */
-    int front, back;       /* position of the queue */
     int base_log_idx;      /* we compact the log, and thus need to increment the base idx */ 
-    raft_entry_t* entries;
+    std::vector<raft_entry_t*> entries;
 
     /**
      * @breif This function when called will ensure that we have enough capacity in the current logger state

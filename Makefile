@@ -6,7 +6,7 @@ GCOV_OUTPUT = *.gcda *.gcno *.gcov
 GCOV_CCFLAGS = -fprofile-arcs -ftest-coverage
 SHELL  = /bin/bash
 CC     = g++
-CCFLAGS = -g -O2 $(GCOV_CCFLAGS) -I$(LLQUEUE_DIR) -I./ -w -fpermissive #-fno-omit-frame-pointer -fno-common -fsigned-char
+CCFLAGS = -g -O0 $(GCOV_CCFLAGS) -I$(LLQUEUE_DIR) -I./ -w -fpermissive -fno-inline-functions #-fno-omit-frame-pointer -fno-common -fsigned-char
 SRCS = state_mach.cpp raft_server.cpp raft_logger.cpp raft_node.cpp $(TEST_DIR)/main_test.c $(TEST_DIR)/test_server.c $(TEST_DIR)/test_node.c $(TEST_DIR)/test_log.c $(TEST_DIR)/test_scenario.c $(TEST_DIR)/mock_send_functions.c $(TEST_DIR)/CuTest.c $(LLQUEUE_DIR)/linked_list_queue.c
 
 all: tests_main

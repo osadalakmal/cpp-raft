@@ -43,6 +43,7 @@ RaftServer::RaftServer() {
   this->timeout_elapsed = 0;
   this->request_timeout = 200;
   this->election_timeout = 1000;
+  this->last_applied_idx = 0;
   this->log = new RaftLogger();
   d_state.set(RAFT_STATE_FOLLOWER);
 }
