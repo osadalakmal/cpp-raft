@@ -780,15 +780,17 @@ void TestRaft_follower_recv_appendentries_delete_entries_if_conflict_with_new_en
     CuAssertTrue(tc, 1 == r->get_log_count());
 
     /* this log will be overwritten by the appendentries below */
+    raft_entry_t ety_extra;
     char* str2 = const_cast<char *>("222");
-    ety.data = str2;
-    ety.len = 3;
-    ety.id = 2;
-    ety.term = 1;
-    r->append_entry(&ety);
+    ety_extra.data = str2;
+    ety_extra.len = 3;
+    ety_extra.id = 2;
+    ety_extra.term = 1;
+    r->append_entry(&ety_extra);
     CuAssertTrue(tc, 2 == r->get_log_count());
     CuAssertTrue(tc, NULL != (ety_appended = r->get_entry_from_idx(2)));
-    CuAssertTrue(tc, memcmp(ety_appended->data,str2,3));
+    printf("Data is %s\n", ety_appended->data);
+    CuAssertTrue(tc, !memcmp(ety_appended->data,str2,3));
 
     /* pass a appendentry that is newer  */
     msg_entry_t mety;
@@ -1470,7 +1472,8 @@ void TestRaft_leader_when_it_becomes_a_leader_sends_empty_appendentries(CuTest *
  * Note: commit means it's been appended to the log, not applied to the FSM */
 void TestRaft_leader_responds_to_entry_msg_when_entry_is_committed(CuTest * tc)
 {
-    RaftServer *r, *sender;
+    RaftServer *r;
+    void *sender;
     msg_entry_response_t *cr;
     raft_cbs_t funcs = {
         sender_send,
@@ -1483,7 +1486,7 @@ void TestRaft_leader_responds_to_entry_msg_when_entry_is_committed(CuTest * tc)
                 {(-1),&NODE_ID_2},
                 {(-1),NULL}};
 
-    sender = new RaftServer();
+    sender = sender_new(NULL);
     r = new RaftServer();
     r->set_callbacks(&funcs,sender);
     r->set_configuration(cfg,0);
@@ -1688,8 +1691,8 @@ void TestRaft_leader_increase_commit_idx_when_majority_have_entry_and_atleast_on
     aer.success = 1;
     aer.current_idx = 1;
     aer.first_idx = 1;
+    r->recv_appendentries_response(0,&aer);
     r->recv_appendentries_response(1,&aer);
-    r->recv_appendentries_response(2,&aer);
     /* leader will now have majority followers who have appended this log */
     CuAssertTrue(tc, 0 != r->get_commit_idx());
     CuAssertTrue(tc, 2 != r->get_commit_idx());
@@ -1706,8 +1709,8 @@ void TestRaft_leader_increase_commit_idx_when_majority_have_entry_and_atleast_on
     aer.success = 1;
     aer.current_idx = 2;
     aer.first_idx = 2;
+    r->recv_appendentries_response(0,&aer);
     r->recv_appendentries_response(1,&aer);
-    r->recv_appendentries_response(2,&aer);
     /* leader will now have majority followers who have appended this log */
     CuAssertTrue(tc, 2 == r->get_commit_idx());
     CuAssertTrue(tc, 2 == r->get_last_applied_idx());

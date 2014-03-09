@@ -53,7 +53,7 @@ int sender_send(void* caller, void* udata, int peer, int type,
     m->data = malloc(len);
     m->sender = reinterpret_cast<RaftServer*>(udata)->get_nodeid();
     memcpy(m->data,data,len);
-    llqueue_offer(me->outbox,m);
+    llqueue_offer((linked_list_queue_t*)me->outbox,m);
 
     if (__nsenders > peer)
     {
@@ -67,10 +67,10 @@ void* sender_new(void* address)
 {
     sender_t* me;
 
-    me = malloc(sizeof(sender_t));
+    me = (sender_t*) malloc(sizeof(sender_t));
     me->outbox = llqueue_new();
     me->inbox = llqueue_new();
-    __senders = realloc(__senders,sizeof(sender_t*) * (++__nsenders));
+    __senders = (sender_t**)realloc(__senders,sizeof(sender_t*) * (++__nsenders));
     __senders[__nsenders-1] = me;
     return me;
 }
@@ -80,7 +80,7 @@ void* sender_poll_msg_data(void* s)
     sender_t* me = (sender_t*)s;
     msg_t* msg;
 
-    msg = llqueue_poll(me->outbox);
+    msg = (msg_t*) llqueue_poll((linked_list_queue_t*)me->outbox);
     return NULL != msg ? msg->data : NULL;
 }
 
@@ -94,7 +94,7 @@ int sender_msgs_available(void* s)
 {
     sender_t* me = (sender_t*)s;
 
-    return 0 < llqueue_count(me->inbox);
+    return 0 < llqueue_count((linked_list_queue_t*)me->inbox);
 }
 
 void sender_poll_msgs(void* s)
@@ -102,24 +102,24 @@ void sender_poll_msgs(void* s)
     sender_t* me = (sender_t*)s;
     msg_t* m;
 
-    while ((m = llqueue_poll(me->inbox)))
+    while ((m = (msg_t*) llqueue_poll((linked_list_queue_t*)me->inbox)))
     {
         switch (m->type)
         {
             case RAFT_MSG_APPENDENTRIES:
-                me->raft->recv_appendentries(m->sender, m->data);
+                me->raft->recv_appendentries(m->sender, (msg_appendentries_t*) m->data);
                 break;
             case RAFT_MSG_APPENDENTRIES_RESPONSE:
-                me->raft->recv_appendentries_response(m->sender, m->data);
+                me->raft->recv_appendentries_response(m->sender, (msg_appendentries_response_t*) m->data);
                 break;
             case RAFT_MSG_REQUESTVOTE:
-                me->raft->recv_requestvote(m->sender, m->data);
+                me->raft->recv_requestvote(m->sender, (msg_requestvote_t*) m->data);
                 break;
             case RAFT_MSG_REQUESTVOTE_RESPONSE:
-                me->raft->recv_requestvote_response(m->sender, m->data);
+                me->raft->recv_requestvote_response(m->sender, (msg_requestvote_response_t*) m->data);
                 break;
             case RAFT_MSG_ENTRY:
-                me->raft->recv_entry(m->sender, m->data);
+                me->raft->recv_entry(m->sender, (msg_entry_t*) m->data);
                 break;
             case RAFT_MSG_ENTRY_RESPONSE:
                 //me->raft->recv_entry_response(m->sender, m->data);
