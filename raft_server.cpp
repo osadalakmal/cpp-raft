@@ -174,7 +174,7 @@ RaftServer::recv_appendentries_response(int node,
     }
   } else {
     /* If AppendEntries fails because of log inconsistency:
-       decrement nextIndex and retry (§5.3) */
+       decrement nextIndex and retry (ï¿½5.3) */
     assert(0 <= p->get_next_idx());
     // TODO does this have test coverage?
     // TODO can jump back to where node is different instead of iterating
@@ -199,7 +199,7 @@ int RaftServer::recv_appendentries(const int node,
   if (d_state.is_leader() && this->current_term <= ae->term)
     become_follower();
 
-  /* 1. Reply false if term < currentTerm (§5.1) */
+  /* 1. Reply false if term < currentTerm (ï¿½5.1) */
   if (ae->term < this->current_term) {
     __log(NULL, "AE term is less than current term");
     r.success = 0;
@@ -211,8 +211,8 @@ int RaftServer::recv_appendentries(const int node,
     raft_entry_t *e;
 
     if ((e = get_entry_from_idx(ae->prev_log_idx))) {
-      /* 2. Reply false if log doesn’t contain an entry at prevLogIndex
-         whose term matches prevLogTerm (§5.3) */
+      /* 2. Reply false if log doesnï¿½t contain an entry at prevLogIndex
+         whose term matches prevLogTerm (ï¿½5.3) */
       if (e->term != ae->prev_log_term) {
         __log(NULL, "AE term doesn't match prev_idx");
         r.success = 0;
@@ -221,7 +221,7 @@ int RaftServer::recv_appendentries(const int node,
 
       /* 3. If an existing entry conflicts with a new one (same index
       but different terms), delete the existing entry and all that
-      follow it (§5.3) */
+      follow it (ï¿½5.3) */
       raft_entry_t *e2;
       if ((e2 = get_entry_from_idx(ae->prev_log_idx + 1))) {
         this->log->log_delete(ae->prev_log_idx + 1);
@@ -264,10 +264,10 @@ int RaftServer::recv_appendentries(const int node,
     /* TODO: replace malloc with mempoll/arena */
     c = reinterpret_cast<raft_entry_t*>(malloc(sizeof(raft_entry_t)));
     c->term = this->current_term;
-    c->len = cmd->len;
-    c->id = cmd->id;
-    c->data = reinterpret_cast<char*>(malloc(cmd->len));
-    memcpy(c->data, cmd->data, cmd->len);
+    c->len = cmd->len();
+    c->id = cmd->id();
+    c->data = reinterpret_cast<char*>(malloc(cmd->len()));
+    memcpy(c->data, cmd->data(), cmd->len());
     if (0 == append_entry(c)) {
       __log(NULL, "AE failure; couldn't append entry");
       r.success = 0;
@@ -360,11 +360,11 @@ int RaftServer::recv_entry(int node, msg_entry_t *e) {
   __log(NULL, "received entry from: %d", node);
 
   ety.term = this->current_term;
-  ety.id = e->id;
-  ety.data = reinterpret_cast<char*>(e->data);
-  ety.len = e->len;
+  ety.id = e->id();
+  ety.data = reinterpret_cast<char*>(e->data());
+  ety.len = e->len();
   res = append_entry(&ety);
-  send_entry_response(node, e->id, res);
+  send_entry_response(node, e->id(), res);
   for (i = 0; i < this->nodes.size(); i++) {
     if (this->nodeid == i)
       continue;

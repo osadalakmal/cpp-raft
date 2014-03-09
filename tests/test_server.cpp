@@ -244,7 +244,7 @@ void TestRaft_server_wont_apply_entry_if_we_dont_have_entry_to_apply(CuTest* tc)
 }
 
 /* If commitidx > lastApplied: increment lastApplied, apply log[lastApplied]
- * to state machine (§5.3) */
+ * to state machine (ï¿½5.3) */
 void TestRaft_server_increment_lastApplied_when_lastApplied_lt_commitidx(CuTest* tc)
 {
     RaftServer *r;
@@ -423,7 +423,7 @@ void TestRaft_server_increase_votes_for_me_when_receive_request_vote_response(
     CuAssertTrue(tc, 1 == r->get_nvotes_for_me());
 }
 
-/* Reply false if term < currentTerm (§5.1) */
+/* Reply false if term < currentTerm (ï¿½5.1) */
 void TestRaft_server_recv_requestvote_reply_false_if_term_less_than_current_term(
     CuTest * tc
 )
@@ -457,7 +457,7 @@ void TestRaft_server_recv_requestvote_reply_false_if_term_less_than_current_term
 }
 
 /* If votedFor is null or candidateId, and candidate's log is at
- * least as up-to-date as local log, grant vote (§5.2, §5.4) */
+ * least as up-to-date as local log, grant vote (ï¿½5.2, ï¿½5.4) */
 void TestRaft_server_dont_grant_vote_if_we_didnt_vote_for_this_candidate(
     CuTest * tc
 )
@@ -629,7 +629,6 @@ void TestRaft_follower_increases_log_after_appendentry(CuTest * tc)
     RaftServer *r;
     void *sender;
     msg_appendentries_t ae;
-    msg_entry_t ety;
     msg_appendentries_response_t *aer;
     char* str = const_cast<char*>("aaa");
 
@@ -662,10 +661,7 @@ void TestRaft_follower_increases_log_after_appendentry(CuTest * tc)
     ae.prev_log_idx = 0;
     ae.leader_commit = 5;
     /* include one entry */
-    memset(&ety,0,sizeof(msg_entry_t));
-    ety.data = reinterpret_cast<unsigned char*>(str);
-    ety.len = 3;
-    ety.id = 1;
+    msg_entry_t ety(1,reinterpret_cast<unsigned char*>(str),3);
     ae.entries = &ety;
     ae.n_entries = 1;
 
@@ -682,7 +678,6 @@ void TestRaft_follower_recv_appendentries_reply_false_if_doesnt_have_log_at_prev
     RaftServer *r;
     void *sender;
     void *msg;
-    msg_entry_t ety;
     char* str = const_cast<char*>("aaa");
     raft_cbs_t funcs = {
         sender_send,
@@ -715,10 +710,7 @@ void TestRaft_follower_recv_appendentries_reply_false_if_doesnt_have_log_at_prev
     /* prev_log_term is less than current term (ie. 2) */
     ae.prev_log_term = 1;
     /* include one entry */
-    memset(&ety,0,sizeof(msg_entry_t));
-    ety.data = reinterpret_cast<unsigned char*>(str);
-    ety.len = 3;
-    ety.id = 1;
+    msg_entry_t ety(1,reinterpret_cast<unsigned char*>(str),3);
     ae.entries = &ety;
     ae.n_entries = 1;
 
@@ -781,19 +773,15 @@ void TestRaft_follower_recv_appendentries_delete_entries_if_conflict_with_new_en
     CuAssertTrue(tc, NULL != (ety_appended = r->get_entry_from_idx(2)));
     CuAssertTrue(tc, !memcmp(ety_appended->data,str2,3));
 
-    /* pass a appendentry that is newer  */
-    msg_entry_t mety;
 
     memset(&ae,0,sizeof(msg_appendentries_t));
     ae.term = 2;
     ae.prev_log_idx = 1;
     ae.prev_log_term = 1;
     /* include one entry */
-    memset(&mety,0,sizeof(msg_entry_t));
     char* str3 = const_cast<char *>("333");
-    mety.data = reinterpret_cast<unsigned char*>(str3);
-    mety.len = 3;
-    mety.id = 3;
+    /* pass a appendentry that is newer  */
+    msg_entry_t mety(3,reinterpret_cast<unsigned char*>(str3),3);
     ae.entries = &mety;
     ae.n_entries = 1;
 
@@ -836,8 +824,8 @@ void TestRaft_follower_recv_appendentries_add_new_entries_not_already_in_log(CuT
     /* include entries */
     msg_entry_t e[2];
     memset(&e,0,sizeof(msg_entry_t) * 2);
-    e[0].id = 1;
-    e[1].id = 2;
+    e[0].id(1);
+    e[1].id(2);
     ae.entries = e;
     ae.n_entries = 2;
     r->recv_appendentries(1,&ae);
@@ -879,10 +867,10 @@ void TestRaft_follower_recv_appendentries_set_commitidx_to_prevLogIdx(CuTest * t
     /* include entries */
     msg_entry_t e[4];
     memset(&e,0,sizeof(msg_entry_t) * 4);
-    e[0].id = 1;
-    e[1].id = 2;
-    e[2].id = 3;
-    e[3].id = 4;
+    e[0].id(1);
+    e[1].id(2);
+    e[2].id(3);
+    e[3].id(4);
     ae.entries = e;
     ae.n_entries = 4;
     r->recv_appendentries(1,&ae);
@@ -932,10 +920,10 @@ void TestRaft_follower_recv_appendentries_set_commitidx_to_LeaderCommit(CuTest *
     /* include entries */
     msg_entry_t e[4];
     memset(&e,0,sizeof(msg_entry_t) * 4);
-    e[0].id = 1;
-    e[1].id = 2;
-    e[2].id = 3;
-    e[3].id = 4;
+    e[0].id(1);
+    e[1].id(2);
+    e[2].id(3);
+    e[3].id(4);
     ae.entries = e;
     ae.n_entries = 4;
     r->recv_appendentries(1,&ae);
@@ -1477,10 +1465,7 @@ void TestRaft_leader_responds_to_entry_msg_when_entry_is_committed(CuTest * tc)
     CuAssertTrue(tc, 0 == r->get_log_count());
 
     /* entry message */
-    msg_entry_t ety;
-    ety.id = 1;
-    ety.data = (unsigned char*)"entry";
-    ety.len = strlen("entry");
+    msg_entry_t ety(1,(unsigned char*)"entry",strlen("entry"));
 
     /* receive entry */
     r->recv_entry(1,&ety);
@@ -1566,7 +1551,7 @@ void TestRaft_leader_retries_appendentries_with_decremented_NextIdx_log_inconsis
 /*
  * If there exists an N such that N > commitidx, a majority
  * of matchidx[i] = N, and log[N].term == currentTerm:
- * set commitidx = N (§5.2, §5.4).  */
+ * set commitidx = N (ï¿½5.2, ï¿½5.4).  */
 void TestRaft_leader_append_entry_to_log_increases_idxno(CuTest * tc)
 {
     RaftServer *r;
@@ -1578,10 +1563,7 @@ void TestRaft_leader_append_entry_to_log_increases_idxno(CuTest * tc)
                 {(-1),NULL}};
 
 
-    msg_entry_t ety;
-    ety.id = 1;
-    ety.data = (unsigned char*)"entry";
-    ety.len = strlen("entry");
+    msg_entry_t ety(1,(unsigned char*)"entry",strlen("entry"));
 
     r = new RaftServer();
     r->set_configuration(cfg,0);
@@ -1591,37 +1573,6 @@ void TestRaft_leader_append_entry_to_log_increases_idxno(CuTest * tc)
     r->recv_entry(1,&ety);
     CuAssertTrue(tc, 1 == r->get_log_count());
 }
-
-#if 0
-// TODO no support for duplicates
-void T_estRaft_leader_doesnt_append_entry_if_unique_id_is_duplicate(CuTest * tc)
-{
-    RaftServer *r;
-
-    /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
-                {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
-
-    msg_entry_t ety;
-    ety.id = 1;
-    ety.data = "entry";
-    ety.len = strlen("entry");
-
-    r = new RaftServer();
-    r->set_configuration(cfg,0);
-
-    r->get_state().set(RAFT_STATE_LEADER);
-    CuAssertTrue(tc, 0 == r->get_log_count());
-
-    r->recv_entry(1,&ety);
-    CuAssertTrue(tc, 1 == r->get_log_count());
-
-    r->recv_entry(1,&ety);
-    CuAssertTrue(tc, 1 == r->get_log_count());
-}
-#endif
 
 void TestRaft_leader_increase_commit_idx_when_majority_have_entry_and_atleast_one_newer_entry(CuTest * tc)
 {

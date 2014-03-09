@@ -1,7 +1,7 @@
 #ifndef RAFT_MSG_INCLUDED_H
 #define RAFT_MSG_INCLUDED_H
 
-struct msg_requestvote_t {
+class msg_requestvote_t {
     /* candidate's term */
     int d_term;
 
@@ -13,6 +13,8 @@ struct msg_requestvote_t {
 
     /* term of candidate's last log entry */
     int d_last_log_term;
+
+public:
 
     msg_requestvote_t(int term, int candidate_id, int last_log_idx, int last_log_term):
       d_term(term), d_candidate_id(candidate_id), d_last_log_idx(last_log_idx), d_last_log_term(last_log_term) {}
@@ -29,15 +31,46 @@ struct msg_requestvote_t {
 
 };
 
-struct msg_entry_t {
+class msg_entry_t {
     /* the entry's unique ID */
-    unsigned int id;
+    unsigned int d_id;
 
     /* entry data */
-    unsigned char* data;
+    unsigned char* d_data;
 
     /* length of entry data */
-    unsigned int len;
+    unsigned int d_len;
+
+public:
+
+    msg_entry_t(): d_id(0), d_data(NULL), d_len(0) { }
+
+    msg_entry_t(unsigned int id, unsigned char* data, unsigned int len):
+    	d_id(id), d_data(data), d_len(len) { }
+
+	unsigned char* data() const {
+		return d_data;
+	}
+
+	void data(unsigned char* data) {
+		this->d_data = data;
+	}
+
+	unsigned int id() const {
+		return d_id;
+	}
+
+	void id(unsigned int id) {
+		this->d_id = id;
+	}
+
+	unsigned int len() const {
+		return d_len;
+	}
+
+	void len(unsigned int len) {
+		this->d_len = len;
+	}
 };
 
 typedef struct {
