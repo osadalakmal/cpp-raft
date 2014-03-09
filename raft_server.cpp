@@ -289,13 +289,13 @@ done:
 int RaftServer::recv_requestvote(int node, msg_requestvote_t *vr) {
   msg_requestvote_response_t r;
 
-  if (get_current_term() < vr->term) {
+  if (get_current_term() < vr->term()) {
     this->voted_for = -1;
   }
 
-  if (vr->term < get_current_term() || /* we've already voted */
+  if (vr->term() < get_current_term() || /* we've already voted */
       -1 != this->voted_for ||              /* we have a more up-to-date log */
-      vr->last_log_idx < this->current_idx) {
+      vr->last_log_idx() < this->current_idx) {
     r.vote_granted = 0;
   } else {
     vote(node);
@@ -374,12 +374,10 @@ int RaftServer::recv_entry(int node, msg_entry_t *e) {
 }
 
 int RaftServer::send_requestvote(int node) {
-  msg_requestvote_t rv;
+  msg_requestvote_t rv(current_term,0,get_current_idx(),0);
 
   __log(NULL, "sending requestvote to: %d", node);
 
-  rv.term = this->current_term;
-  rv.last_log_idx = get_current_idx();
   if (this->cb.send)
     this->cb.send(this->cb_ctx, this, node, RAFT_MSG_REQUESTVOTE, (const unsigned char*)&rv,
                   sizeof(msg_requestvote_t));

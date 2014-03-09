@@ -434,7 +434,7 @@ void TestRaft_server_recv_requestvote_reply_false_if_term_less_than_current_term
         sender_send,
         NULL
     };
-    msg_requestvote_t rv;
+    msg_requestvote_t rv(1,0,0,0);
     msg_requestvote_response_t *rvr;
 
     /* 2 nodes */
@@ -449,9 +449,6 @@ void TestRaft_server_recv_requestvote_reply_false_if_term_less_than_current_term
     r->set_callbacks(&funcs,sender);
     r->set_current_term(2);
 
-    /* term is less than current term */
-    memset(&rv,0,sizeof(msg_requestvote_t));
-    rv.term = 1;
     r->recv_requestvote(1,&rv);
 
     rvr = reinterpret_cast<msg_requestvote_response_t*>(sender_poll_msg_data(sender));
@@ -467,12 +464,11 @@ void TestRaft_server_dont_grant_vote_if_we_didnt_vote_for_this_candidate(
 {
     RaftServer *r;
     void *sender;
-    void *msg;
     raft_cbs_t funcs = {
         sender_send,
         NULL
     };
-    msg_requestvote_t rv;
+    msg_requestvote_t rv(1,1,0,1);
     msg_requestvote_response_t *rvr;
 
     /* 2 nodes */
@@ -488,12 +484,6 @@ void TestRaft_server_dont_grant_vote_if_we_didnt_vote_for_this_candidate(
     r->set_callbacks(&funcs,sender);
 
     r->vote(0);
-
-    memset(&rv,0,sizeof(msg_requestvote_t));
-    rv.term = 1;
-    rv.candidate_id = 1;
-    rv.last_log_idx = 0;
-    rv.last_log_term = 1;
     r->recv_requestvote(1,&rv);
 
     rvr = reinterpret_cast<msg_requestvote_response_t*>(sender_poll_msg_data(sender));
@@ -789,7 +779,6 @@ void TestRaft_follower_recv_appendentries_delete_entries_if_conflict_with_new_en
     r->append_entry(&ety_extra);
     CuAssertTrue(tc, 2 == r->get_log_count());
     CuAssertTrue(tc, NULL != (ety_appended = r->get_entry_from_idx(2)));
-    printf("Data is %s\n", ety_appended->data);
     CuAssertTrue(tc, !memcmp(ety_appended->data,str2,3));
 
     /* pass a appendentry that is newer  */
@@ -1009,21 +998,13 @@ void TestRaft_follower_dont_grant_vote_if_candidate_has_a_less_complete_log(CuTe
                 {(-1),NULL}};
 
 
-    msg_requestvote_t rv;
+    msg_requestvote_t rv(1,1,1,1);
     msg_requestvote_response_t *rvr;
 
     sender = sender_new(NULL);
     r = new RaftServer();
     r->set_callbacks(&funcs,sender);
     r->set_configuration(cfg,0);
-
-    /*  request vote */
-    /*  vote indicates candidate's log is not complete compared to follower */
-    memset(&rv,0,sizeof(msg_requestvote_t));
-    rv.term = 1;
-    rv.candidate_id = 1;
-    rv.last_log_idx = 1;
-    rv.last_log_term = 1;
 
     /* server's term and idx are more up-to-date */
     r->set_current_term(1);
@@ -1135,12 +1116,12 @@ void TestRaft_follower_becoming_candidate_requests_votes_from_other_servers(CuTe
     /* 2 nodes = 2 vote requests */
     rv = reinterpret_cast<msg_requestvote_t*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != rv);
-    CuAssertTrue(tc, 2 != rv->term);
-    CuAssertTrue(tc, 3 == rv->term);
+    CuAssertTrue(tc, 2 != rv->term());
+    CuAssertTrue(tc, 3 == rv->term());
     /*  TODO: there should be more items */
     rv = reinterpret_cast<msg_requestvote_t*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != rv);
-    CuAssertTrue(tc, 3 == rv->term);
+    CuAssertTrue(tc, 3 == rv->term());
 }
 
 /* Candidate 5.2 */
@@ -1251,7 +1232,7 @@ void TestRaft_candidate_will_not_respond_to_voterequest_if_it_has_already_voted(
                 {(-1),NULL}};
 
     msg_requestvote_response_t* rvr;
-    msg_requestvote_t rv;
+    msg_requestvote_t rv(0,0,0,0);
 
     sender = sender_new(NULL);
     r = new RaftServer();
@@ -1297,8 +1278,8 @@ void TestRaft_candidate_requestvote_includes_logidx(CuTest * tc)
 
     rv = reinterpret_cast<msg_requestvote_t*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != rv);
-    CuAssertTrue(tc, 3 == rv->last_log_idx);
-    CuAssertTrue(tc, 5 == rv->term);
+    CuAssertTrue(tc, 3 == rv->last_log_idx());
+    CuAssertTrue(tc, 5 == rv->term());
 }
 
 /* Candidate 5.2 */

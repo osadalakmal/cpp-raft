@@ -3,6 +3,7 @@
 
 #include "state_mach.h"
 #include "raft.h"
+#include "raft_msg.h"
 #include <cstddef>
 #include <vector>
 
