@@ -1,3 +1,7 @@
 [submodule "CLinkedListQueue"]
 	path = CLinkedListQueue
 	url = https://github.com/willemt/CLinkedListQueue.git
+[submodule "pantheios"]
+	path = pantheios
+	url = https://github.com/zvelo/pantheios
+	branch = master
