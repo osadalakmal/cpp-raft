@@ -36,15 +36,10 @@ static void __log(void *src, const char *fmt, ...) {
   vsprintf(buf, fmt, args);
 }
 
-RaftServer::RaftServer() {
-  this->current_term = 0;
-  this->voted_for = -1;
-  this->current_idx = 1;
-  this->timeout_elapsed = 0;
-  this->request_timeout = 200;
-  this->election_timeout = 1000;
-  this->last_applied_idx = 0;
-  this->log = new RaftLogger();
+RaftServer::RaftServer() : current_term(0), voted_for(-1), current_idx(1),
+		timeout_elapsed(0), request_timeout(200), election_timeout(1000),
+		last_applied_idx(0), log(new RaftLogger()), commit_idx(0), nodeid(0),
+		cb_ctx(NULL){
   d_state.set(RAFT_STATE_FOLLOWER);
 }
 
