@@ -23,7 +23,7 @@ $(TEST_DIR)/main_test.c:
 
 tests_main: $(SRCS)
 	$(CC) $(CCFLAGS) -o $@ $^
-	./tests_main
+	#./tests_main
 
 clean:
 	rm -f $(TEST_DIR)/main_test.c *.o $(GCOV_OUTPUT)

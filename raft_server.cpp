@@ -196,24 +196,24 @@ int RaftServer::recv_appendentries(const int node,
   r.term = this->current_term;
 
   /* we've found a leader who is legitimate */
-  if (d_state.is_leader() && this->current_term <= ae->term)
+  if (d_state.is_leader() && this->current_term <= ae->getTerm())
     become_follower();
 
   /* 1. Reply false if term < currentTerm (�5.1) */
-  if (ae->term < this->current_term) {
+  if (ae->getTerm() < this->current_term) {
     __log(NULL, "AE term is less than current term");
     r.success = 0;
     goto done;
   }
 
   /* not the first appendentries we've received */
-  if (0 != ae->prev_log_idx) {
+  if (0 != ae->getPrevLogIdx()) {
     raft_entry_t *e;
 
-    if ((e = get_entry_from_idx(ae->prev_log_idx))) {
+    if ((e = get_entry_from_idx(ae->getPrevLogIdx()))) {
       /* 2. Reply false if log doesn�t contain an entry at prevLogIndex
          whose term matches prevLogTerm (�5.3) */
-      if (e->term != ae->prev_log_term) {
+      if (e->term != ae->getPrevLogTerm()) {
         __log(NULL, "AE term doesn't match prev_idx");
         r.success = 0;
         goto done;
@@ -223,8 +223,8 @@ int RaftServer::recv_appendentries(const int node,
       but different terms), delete the existing entry and all that
       follow it (�5.3) */
       raft_entry_t *e2;
-      if ((e2 = get_entry_from_idx(ae->prev_log_idx + 1))) {
-        this->log->log_delete(ae->prev_log_idx + 1);
+      if ((e2 = get_entry_from_idx(ae->getPrevLogIdx() + 1))) {
+        this->log->log_delete(ae->getPrevLogIdx() + 1);
       }
     } else {
       __log(NULL, "AE no log at prev_idx");
@@ -236,12 +236,12 @@ int RaftServer::recv_appendentries(const int node,
 
   /* 5. If leaderCommit > commitIndex, set commitIndex =
       min(leaderCommit, last log index) */
-  if (get_commit_idx() < ae->leader_commit) {
+  if (get_commit_idx() < ae->getLeaderCommit()) {
     raft_entry_t *e;
 
     if ((e = this->log->log_peektail())) {
-      set_commit_idx(e->id < ae->leader_commit ? e->id
-                                                    : ae->leader_commit);
+      set_commit_idx(e->id < ae->getLeaderCommit() ? e->id
+                                                    : ae->getLeaderCommit());
       while (1 == apply_entry())
         ;
     }
@@ -250,16 +250,16 @@ int RaftServer::recv_appendentries(const int node,
   if (d_state.is_candidate())
     become_follower();
 
-  set_current_term(ae->term);
+  set_current_term(ae->getTerm());
 
   int i;
 
   /* append all entries to log */
-  for (i = 0; i < ae->n_entries; i++) {
+  for (i = 0; i < ae->getNEntries(); i++) {
     msg_entry_t *cmd;
     raft_entry_t *c;
 
-    cmd = &ae->entries[i];
+    cmd = &ae->getEntries()[i];
 
     /* TODO: replace malloc with mempoll/arena */
     c = reinterpret_cast<raft_entry_t*>(malloc(sizeof(raft_entry_t)));
@@ -277,7 +277,7 @@ int RaftServer::recv_appendentries(const int node,
 
   r.success = 1;
   r.current_idx = get_current_idx();
-  r.first_idx = ae->prev_log_idx + 1;
+  r.first_idx = ae->getPrevLogIdx() + 1;
 
 done:
   if (this->cb.send)
@@ -402,8 +402,8 @@ int RaftServer::apply_entry() {
   __log(NULL, "applying log: %d", this->last_applied_idx);
 
   this->last_applied_idx++;
-  if (this->commit_idx < this->last_applied_idx)
-    this->commit_idx = this->last_applied_idx;
+  if (get_commit_idx() < this->last_applied_idx)
+    set_commit_idx(this->last_applied_idx);
   if (this->cb.applylog)
     this->cb.applylog(this->cb_ctx, this, reinterpret_cast<const unsigned char*>(e->data), e->len);
   return 1;
@@ -416,15 +416,9 @@ void RaftServer::send_appendentries(int node) {
   if (!(this->cb.send))
     return;
 
-  msg_appendentries_t ae;
   NodeIter p = get_node(node);
 
-  ae.term = this->current_term;
-  ae.leader_id = this->nodeid;
-  ae.prev_log_term = p->get_next_idx();
-  // TODO:
-  ae.prev_log_idx = 0;
-  ae.n_entries = 0;
+  msg_appendentries_t ae(current_term,nodeid,0,p->get_next_idx(),0,NULL,0);
   this->cb.send(this->cb_ctx, this, node, RAFT_MSG_APPENDENTRIES, (const unsigned char*)&ae,
                 sizeof(msg_appendentries_t));
 }

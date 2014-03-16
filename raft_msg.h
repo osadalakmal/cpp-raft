@@ -89,15 +89,86 @@ typedef struct {
     int vote_granted;
 } msg_requestvote_response_t;
 
-typedef struct {
-    int term;
-    int leader_id;
-    int prev_log_idx;
-    int prev_log_term;
-    int n_entries;
-    msg_entry_t* entries;
-    int leader_commit;
-} msg_appendentries_t;
+class msg_appendentries_t {
+    int d_term;
+    int d_leader_id;
+    int d_prev_log_idx;
+    int d_prev_log_term;
+    int d_n_entries;
+    msg_entry_t* d_entries;
+    int d_leader_commit;
+
+public:
+
+    msg_appendentries_t() : d_term(0), d_leader_id(0), d_prev_log_idx(0),
+    	d_prev_log_term(0), d_n_entries(0), d_entries(NULL), d_leader_commit(0) {
+
+    }
+
+    msg_appendentries_t(int term, int leader_id, int prev_log_idx,
+    		int prev_log_term, int n_entries, msg_entry_t* entries,
+    		int leader_commit) : d_term(term), d_leader_id(leader_id), d_prev_log_idx(prev_log_idx),
+        	d_prev_log_term(prev_log_term), d_n_entries(n_entries), d_entries(entries),
+        	d_leader_commit(leader_commit) {
+
+	}
+
+	const msg_entry_t* getEntries() const {
+		return d_entries;
+	}
+
+	void setEntries(const msg_entry_t*& entries) {
+		d_entries = entries;
+	}
+
+	int getLeaderCommit() const {
+		return d_leader_commit;
+	}
+
+	void setLeaderCommit(int leaderCommit) {
+		d_leader_commit = leaderCommit;
+	}
+
+	int getLeaderId() const {
+		return d_leader_id;
+	}
+
+	void setLeaderId(int leaderId) {
+		d_leader_id = leaderId;
+	}
+
+	int getNEntries() const {
+		return d_n_entries;
+	}
+
+	void setNEntries(int nEntries) {
+		d_n_entries = nEntries;
+	}
+
+	int getPrevLogIdx() const {
+		return d_prev_log_idx;
+	}
+
+	void setPrevLogIdx(int prevLogIdx) {
+		d_prev_log_idx = prevLogIdx;
+	}
+
+	int getPrevLogTerm() const {
+		return d_prev_log_term;
+	}
+
+	void setPrevLogTerm(int prevLogTerm) {
+		d_prev_log_term = prevLogTerm;
+	}
+
+	int getTerm() const {
+		return d_term;
+	}
+
+	void setTerm(int term) {
+		d_term = term;
+	}
+};
 
 typedef struct {
     /* currentTerm, for leader to update itself */
