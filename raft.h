@@ -33,7 +33,7 @@ typedef int (
     int node,
     int msg_type,
     const unsigned char *send_data,
-    const int len
+    const int d_len
 );
 
 #ifndef HAVE_FUNC_LOG
@@ -55,8 +55,8 @@ typedef int (
 )   (
     void *cb_ctx,
     void *udata,
-    const unsigned char *data,
-    const int len
+    const unsigned char *d_data,
+    const int d_len
 );
 
 typedef struct {
@@ -70,15 +70,62 @@ typedef int* raft_node_t;
 
 struct raft_entry_t {
     /* entry's term */
-    unsigned int term;
+    unsigned int d_term;
     /* the entry's unique ID */
-    unsigned int id;
-    /* entry data */
-    char* data;
-    /* length of entry data */
-    unsigned int len;
+    unsigned int d_id;
+    /* entry d_data */
+    char* d_data;
+    /* length of entry d_data */
+    unsigned int d_len;
     /* number of nodes that have this entry */
-    unsigned int num_nodes;
+    unsigned int d_num_nodes;
+
+    raft_entry_t() : d_term(0), d_id(0), d_data(0), d_len(0), d_num_nodes(0) {
+    }
+
+    raft_entry_t(unsigned int term, unsigned int id, char* data, unsigned int len, unsigned int num_nodes = 0) :
+    	d_term(term), d_id(id), d_data(data), d_len(len), d_num_nodes(num_nodes) {
+	}
+
+	char* getData() const {
+		return d_data;
+	}
+
+	void setData(char* data) {
+		this->d_data = data;
+	}
+
+	unsigned int getId() const {
+		return d_id;
+	}
+
+	void setId(unsigned int id) {
+		this->d_id = id;
+	}
+
+	unsigned int getLen() const {
+		return d_len;
+	}
+
+	void setLen(unsigned int len) {
+		this->d_len = len;
+	}
+
+	unsigned int getNumNodes() const {
+		return d_num_nodes;
+	}
+
+	void setNumNodes(unsigned int numNodes) {
+		d_num_nodes = numNodes;
+	}
+
+	unsigned int getTerm() const {
+		return d_term;
+	}
+
+	void setTerm(unsigned int term) {
+		this->d_term = term;
+	}
 };
 
 

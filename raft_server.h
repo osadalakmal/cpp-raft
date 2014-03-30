@@ -5,6 +5,7 @@
 #include "raft.h"
 #include "raft_msg.h"
 #include <cstddef>
+#include <functional>
 #include <vector>
 
 class RaftLogger;
@@ -54,6 +55,13 @@ class RaftServer {
 
   /// my node ID
   size_t nodeid;
+
+  typedef void (RaftServer::* PerNodeCallback)(int);
+  void forAllNodesExceptSelf(std::function<void(int)> callback);
+  void inline forAllNodesExceptSelf(PerNodeCallback callback) {
+	  forAllNodesExceptSelf(std::bind(callback,this,std::placeholders::_1));
+  }
+
   public:
 
   /**
@@ -128,7 +136,7 @@ class RaftServer {
    * @param e The entry message */
   int recv_entry( int node, msg_entry_t* e);
 
-  int send_requestvote( int node);
+  void send_requestvote( int node);
 
   int append_entry( raft_entry_t* c);
 

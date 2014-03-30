@@ -50,6 +50,16 @@ void RaftServer::set_callbacks(raft_cbs_t *funcs, void *cb_ctx) {
 
 RaftServer::~RaftServer() { delete this->log; }
 
+void RaftServer::forAllNodesExceptSelf(std::function<void(int)> callback) {
+	for (int i = 0; i < this->nodes.size(); i++) {
+		if (this->nodeid == i) {
+			continue;
+		} else {
+			callback(i);
+		}
+	}
+}
+
 void RaftServer::election_start() {
 
   __log(NULL, "election starting: %d %d, term: %d", this->election_timeout,
@@ -65,13 +75,11 @@ void RaftServer::become_leader() {
 
   d_state.set(RAFT_STATE_LEADER);
   this->voted_for = -1;
-  for (i = 0; i < this->nodes.size(); i++) {
-    if (this->nodeid == i)
-      continue;
-    NodeIter p = get_node(i);
-    p->set_next_idx(get_current_idx() + 1);
-    send_appendentries(i);
-  }
+  forAllNodesExceptSelf([this](int i) {
+	  NodeIter p = get_node(i);
+      p->set_next_idx(get_current_idx() + 1);
+      send_appendentries(i);
+  });
 }
 
 void RaftServer::become_candidate() {
@@ -88,11 +96,7 @@ void RaftServer::become_candidate() {
   this->timeout_elapsed = rand() % 500;
 
   /* request votes from nodes */
-  for (i = 0; i < this->nodes.size(); i++) {
-    if (this->nodeid == i)
-      continue;
-    send_requestvote(i);
-  }
+  forAllNodesExceptSelf(&RaftServer::send_requestvote);
 }
 
 void RaftServer::become_follower() {
@@ -160,7 +164,7 @@ RaftServer::recv_appendentries_response(int node,
       e = this->log->log_get_from_idx(this->last_applied_idx + 1);
 
       /* majority has this */
-      if (e && this->nodes.size() / 2 <= e->num_nodes) {
+      if (e && this->nodes.size() / 2 <= e->d_num_nodes) {
         if (0 == apply_entry())
           break;
       } else {
@@ -208,7 +212,7 @@ int RaftServer::recv_appendentries(const int node,
     if ((e = get_entry_from_idx(ae->getPrevLogIdx()))) {
       /* 2. Reply false if log doesn�t contain an entry at prevLogIndex
          whose term matches prevLogTerm (�5.3) */
-      if (e->term != ae->getPrevLogTerm()) {
+      if (e->d_term != ae->getPrevLogTerm()) {
         __log(NULL, "AE term doesn't match prev_idx");
         r.success = 0;
         goto done;
@@ -235,7 +239,7 @@ int RaftServer::recv_appendentries(const int node,
     raft_entry_t *e;
 
     if ((e = this->log->log_peektail())) {
-      set_commit_idx(e->id < ae->getLeaderCommit() ? e->id
+      set_commit_idx(e->d_id < ae->getLeaderCommit() ? e->d_id
                                                     : ae->getLeaderCommit());
       while (1 == apply_entry())
         ;
@@ -258,11 +262,11 @@ int RaftServer::recv_appendentries(const int node,
 
     /* TODO: replace malloc with mempoll/arena */
     c = reinterpret_cast<raft_entry_t*>(malloc(sizeof(raft_entry_t)));
-    c->term = this->current_term;
-    c->len = cmd->len();
-    c->id = cmd->id();
-    c->data = reinterpret_cast<char*>(malloc(cmd->len()));
-    memcpy(c->data, cmd->data(), cmd->len());
+    c->d_term = this->current_term;
+    c->d_len = cmd->len();
+    c->d_id = cmd->id();
+    c->d_data = reinterpret_cast<char*>(malloc(cmd->len()));
+    memcpy(c->d_data, cmd->data(), cmd->len());
     if (0 == append_entry(c)) {
       __log(NULL, "AE failure; couldn't append entry");
       r.success = 0;
@@ -349,26 +353,14 @@ int RaftServer::send_entry_response(int node, int etyid,
 }
 
 int RaftServer::recv_entry(int node, msg_entry_t *e) {
-  raft_entry_t ety;
-  int res, i;
-
+  raft_entry_t ety(this->current_term,e->id(),reinterpret_cast<char*>(e->data()),e->len());
   __log(NULL, "received entry from: %d", node);
-
-  ety.term = this->current_term;
-  ety.id = e->id();
-  ety.data = reinterpret_cast<char*>(e->data());
-  ety.len = e->len();
-  res = append_entry(&ety);
-  send_entry_response(node, e->id(), res);
-  for (i = 0; i < this->nodes.size(); i++) {
-    if (this->nodeid == i)
-      continue;
-    send_appendentries(i);
-  }
+  send_entry_response(node, e->id(), append_entry(&ety));
+  forAllNodesExceptSelf(std::bind( &RaftServer::send_appendentries, this, std::placeholders::_1));
   return 0;
 }
 
-int RaftServer::send_requestvote(int node) {
+void RaftServer::send_requestvote(int node) {
   msg_requestvote_t rv(current_term,0,get_current_idx(),0);
 
   __log(NULL, "sending requestvote to: %d", node);
@@ -376,7 +368,6 @@ int RaftServer::send_requestvote(int node) {
   if (this->cb.send)
     this->cb.send(this->cb_ctx, this, node, RAFT_MSG_REQUESTVOTE, (const unsigned char*)&rv,
                   sizeof(msg_requestvote_t));
-  return 1;
 }
 
 int RaftServer::append_entry(raft_entry_t *c) {
@@ -400,7 +391,7 @@ int RaftServer::apply_entry() {
   if (get_commit_idx() < this->last_applied_idx)
     set_commit_idx(this->last_applied_idx);
   if (this->cb.applylog)
-    this->cb.applylog(this->cb_ctx, this, reinterpret_cast<const unsigned char*>(e->data), e->len);
+    this->cb.applylog(this->cb_ctx, this, reinterpret_cast<const unsigned char*>(e->d_data), e->d_len);
   return 1;
 }
 

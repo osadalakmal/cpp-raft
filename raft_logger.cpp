@@ -9,11 +9,11 @@ RaftLogger::RaftLogger() : entries() {
 }
 
 int RaftLogger::log_append_entry(raft_entry_t* c) {
-    if (0 == c->id)
+    if (0 == c->d_id)
         return 0;
 
     entries.push_back(new raft_entry_t(*c));
-    entries.back()->num_nodes = 0;
+    entries.back()->d_num_nodes = 0;
     return 1;
 
 }
@@ -60,6 +60,6 @@ void RaftLogger::log_mark_node_has_committed(int idx)
 
     if ((e = log_get_from_idx(idx)))
     {
-        e->num_nodes += 1;
+        e->d_num_nodes += 1;
     }
 }
