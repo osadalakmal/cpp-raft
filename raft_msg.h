@@ -1,6 +1,10 @@
 #ifndef RAFT_MSG_INCLUDED_H
 #define RAFT_MSG_INCLUDED_H
 
+#include <vector>
+#include <string.h>
+#include <stdlib.h>
+
 class msg_requestvote_t {
     /* candidate's term */
     int d_term;
@@ -73,6 +77,74 @@ public:
 	}
 };
 
+struct raft_entry_t {
+    /* entry's term */
+    unsigned int d_term;
+    /* the entry's unique ID */
+    unsigned int d_id;
+    /* entry d_data */
+    char* d_data;
+    /* length of entry d_data */
+    unsigned int d_len;
+    /* number of nodes that have this entry */
+    unsigned int d_num_nodes;
+
+    raft_entry_t() : d_term(0), d_id(0), d_data(0), d_len(0), d_num_nodes(0) {
+    }
+
+    raft_entry_t(unsigned int term, unsigned int id, char* data, unsigned int len, unsigned int num_nodes = 0) :
+    	d_term(term), d_id(id), d_data(data), d_len(len), d_num_nodes(num_nodes) {
+	}
+
+	char* getData() const {
+		return d_data;
+	}
+
+	void setData(char* data) {
+		this->d_data = data;
+	}
+
+	unsigned int getId() const {
+		return d_id;
+	}
+
+	void setId(unsigned int id) {
+		this->d_id = id;
+	}
+
+	unsigned int getLen() const {
+		return d_len;
+	}
+
+	void setLen(unsigned int len) {
+		this->d_len = len;
+	}
+
+	unsigned int getNumNodes() const {
+		return d_num_nodes;
+	}
+
+	void setNumNodes(unsigned int numNodes) {
+		d_num_nodes = numNodes;
+	}
+
+	unsigned int getTerm() const {
+		return d_term;
+	}
+
+	void setTerm(unsigned int term) {
+		this->d_term = term;
+	}
+
+	void populateFromMsgEntry(const msg_entry_t& msg) {
+		d_len = msg.len();
+		d_id = msg.id();
+		d_data = reinterpret_cast<char*>(malloc(msg.len()));
+		memcpy(d_data, msg.data(), msg.len());
+	}
+
+};
+
 typedef struct {
     /* the entry's unique ID */
     unsigned int id;
@@ -89,36 +161,34 @@ typedef struct {
     int vote_granted;
 } msg_requestvote_response_t;
 
-class msg_appendentries_t {
+class MsgAppendEntries {
     int d_term;
     int d_leader_id;
     int d_prev_log_idx;
     int d_prev_log_term;
-    int d_n_entries;
-    msg_entry_t* d_entries;
+    std::vector<msg_entry_t> d_entries;
     int d_leader_commit;
 
 public:
 
-    msg_appendentries_t() : d_term(0), d_leader_id(0), d_prev_log_idx(0),
-    	d_prev_log_term(0), d_n_entries(0), d_entries(NULL), d_leader_commit(0) {
+    MsgAppendEntries() : d_term(0), d_leader_id(0), d_prev_log_idx(0),
+    	d_prev_log_term(0), d_entries(), d_leader_commit(0) {
 
     }
 
-    msg_appendentries_t(int term, int leader_id, int prev_log_idx,
-    		int prev_log_term, int n_entries, msg_entry_t* entries,
-    		int leader_commit) : d_term(term), d_leader_id(leader_id), d_prev_log_idx(prev_log_idx),
-        	d_prev_log_term(prev_log_term), d_n_entries(n_entries), d_entries(entries),
-        	d_leader_commit(leader_commit) {
+    MsgAppendEntries(int term, int leader_id, int prev_log_idx,
+    		int prev_log_term, int n_entries, int leader_commit) :
+    		d_term(term), d_leader_id(leader_id), d_prev_log_idx(prev_log_idx),
+        	d_prev_log_term(prev_log_term), d_entries(), d_leader_commit(leader_commit) {
 
 	}
 
-	const msg_entry_t* getEntries() const {
-		return d_entries;
+	const msg_entry_t& getEntry(int i) const {
+		return d_entries[i];
 	}
 
-	void setEntries(const msg_entry_t*& entries) {
-		d_entries = entries;
+	void addEntry(const msg_entry_t& entry) {
+		d_entries.push_back(entry);
 	}
 
 	int getLeaderCommit() const {
@@ -138,11 +208,7 @@ public:
 	}
 
 	int getNEntries() const {
-		return d_n_entries;
-	}
-
-	void setNEntries(int nEntries) {
-		d_n_entries = nEntries;
+		return d_entries.size();
 	}
 
 	int getPrevLogIdx() const {

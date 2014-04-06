@@ -2,6 +2,7 @@
 #define RAFT_LOGGER_H
 
 #include "raft.h"
+#include "raft_msg.h"
 #include <vector>
 
 class RaftLogger {

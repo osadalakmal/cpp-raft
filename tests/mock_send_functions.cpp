@@ -108,7 +108,7 @@ void sender_poll_msgs(void* s)
         switch (m->type)
         {
             case RAFT_MSG_APPENDENTRIES:
-                me->raft->recv_appendentries(m->sender, (msg_appendentries_t*) m->data);
+                me->raft->recv_appendentries(m->sender, (MsgAppendEntries*) m->data);
                 break;
             case RAFT_MSG_APPENDENTRIES_RESPONSE:
                 me->raft->recv_appendentries_response(m->sender, (msg_appendentries_response_t*) m->data);

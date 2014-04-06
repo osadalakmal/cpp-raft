@@ -548,7 +548,7 @@ void TestRaft_follower_recv_appendentries_reply_false_if_term_less_than_currentt
     r.set_callbacks(&funcs,sender);
 
     /* term is low */
-    msg_appendentries_t ae(1,0,0,0,0,NULL,0);
+    MsgAppendEntries ae(1,0,0,0,0,0);
 
     /*  higher current term */
     r.set_current_term(5);
@@ -588,7 +588,7 @@ void TestRaft_follower_recv_appendentries_updates_currentterm_if_term_gt_current
 
     /*  newer term for appendentry */
     /* no prev log idx */
-    msg_appendentries_t ae (2,0,0,0,0,NULL,0);
+    MsgAppendEntries ae (2,0,0,0,0,0);
 
     /*  appendentry has newer term, so we change our currentterm */
     r.recv_appendentries(1,&ae);
@@ -622,7 +622,7 @@ void TestRaft_follower_doesnt_log_after_appendentry_if_no_entries_are_specified(
     CuAssertTrue(tc, 0 == r.get_log_count());
 
     /* receive an appendentry with commit */
-    msg_appendentries_t ae(1,0,4,1,0,NULL,5);
+    MsgAppendEntries ae(1,0,4,1,0,5);
 
     r.recv_appendentries(1,&ae);
     CuAssertTrue(tc, 0 == r.get_log_count());
@@ -660,7 +660,8 @@ void TestRaft_follower_increases_log_after_appendentry(CuTest * tc)
 
     /* include one entry */
     msg_entry_t ety(1,reinterpret_cast<unsigned char*>(str),3);
-    msg_appendentries_t ae(1,0,0,1,1,&ety,5);
+    MsgAppendEntries ae(1,0,0,1,1,5);
+    ae.addEntry(ety);
 
     r.recv_appendentries(1,&ae);
     aer = reinterpret_cast<msg_appendentries_response_t*>(sender_poll_msg_data(sender));
@@ -701,7 +702,7 @@ void TestRaft_follower_recv_appendentries_reply_false_if_doesnt_have_log_at_prev
 
     /* log idx that server doesn't have */
     /* prev_log_term is less than current term (ie. 2) */
-    msg_appendentries_t ae(2,0,1,1,0,NULL,0);
+    MsgAppendEntries ae(2,0,1,1,0,0);
 
     /* trigger reply */
     r.recv_appendentries(1,&ae);
@@ -766,7 +767,8 @@ void TestRaft_follower_recv_appendentries_delete_entries_if_conflict_with_new_en
     char* str3 = const_cast<char *>("333");
     /* pass a appendentry that is newer  */
     msg_entry_t mety(3,reinterpret_cast<unsigned char*>(str3),3);
-    msg_appendentries_t ae(2,0,1,1,1,&mety,0);
+    MsgAppendEntries ae(2,0,1,1,1,0);
+    ae.addEntry(mety);
 
     r.recv_appendentries(1,&ae);
     aer = reinterpret_cast<msg_appendentries_response_t*>(sender_poll_msg_data(sender));
@@ -804,7 +806,9 @@ void TestRaft_follower_recv_appendentries_add_new_entries_not_already_in_log(CuT
     memset(&e,0,sizeof(msg_entry_t) * 2);
     e[0].id(1);
     e[1].id(2);
-    msg_appendentries_t ae(1,0,0,1,2,e,0);
+    MsgAppendEntries ae(1,0,0,1,2,0);
+    ae.addEntry(e[0]);
+    ae.addEntry(e[1]);
     r.recv_appendentries(1,&ae);
 
     msg_appendentries_response_t *aer;
@@ -843,7 +847,11 @@ void TestRaft_follower_recv_appendentries_set_commitidx_to_prevLogIdx(CuTest * t
     e[1].id(2);
     e[2].id(3);
     e[3].id(4);
-    msg_appendentries_t ae(1,0,0,1,4,e,0);
+    MsgAppendEntries ae(1,0,0,1,4,0);
+    ae.addEntry(e[0]);
+    ae.addEntry(e[1]);
+    ae.addEntry(e[2]);
+    ae.addEntry(e[3]);
     r.recv_appendentries(1,&ae);
 
     /* receive an appendentry with commit */
@@ -890,7 +898,11 @@ void TestRaft_follower_recv_appendentries_set_commitidx_to_LeaderCommit(CuTest *
     e[1].id(2);
     e[2].id(3);
     e[3].id(4);
-    msg_appendentries_t ae(1,0,0,1,4,e,0);
+    MsgAppendEntries ae(1,0,0,1,4,0);
+    ae.addEntry(e[0]);
+    ae.addEntry(e[1]);
+    ae.addEntry(e[2]);
+    ae.addEntry(e[3]);
     r.recv_appendentries(1,&ae);
 
     /* receive an appendentry with commit */
@@ -1036,7 +1048,7 @@ void TestRaft_follower_receiving_appendentries_resets_election_timeout(CuTest * 
 
     r.periodic(900);
 
-    msg_appendentries_t ae;
+    MsgAppendEntries ae;
     ae.setTerm(1);
     r.recv_appendentries(1,&ae);
     CuAssertTrue(tc, 0 == r.get_timeout_elapsed());
@@ -1266,7 +1278,7 @@ void TestRaft_candidate_recv_appendentries_frm_leader_results_in_follower(CuTest
     CuAssertTrue(tc, 0 == r.get_state().is_follower());
 
     /* receive recent appendentries */
-    msg_appendentries_t ae(1,0,0,0,0,NULL,0);
+    MsgAppendEntries ae(1,0,0,0,0,0);
     r.recv_appendentries(1,&ae);
     CuAssertTrue(tc, 1 == r.get_state().is_follower());
 }
@@ -1301,7 +1313,7 @@ void TestRaft_candidate_recv_appendentries_frm_invalid_leader_doesnt_result_in_f
     CuAssertTrue(tc, 0 == r.get_state().is_follower());
 
     /*  invalid leader determined by "leaders" old log */
-    msg_appendentries_t ae(1,0,1,1,0,NULL,0);
+    MsgAppendEntries ae(1,0,1,1,0,0);
 
     /* appendentry from invalid leader doesn't make candidate become follower */
     r.recv_appendentries(1,&ae);
@@ -1345,7 +1357,7 @@ void TestRaft_leader_when_becomes_leader_all_nodes_have_nextidx_equal_to_lastlog
                 {(-1),&NODE_ID_3},
                 {(-1),NULL}};
 
-    msg_appendentries_t* ae;
+    MsgAppendEntries* ae;
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1381,7 +1393,7 @@ void TestRaft_leader_when_it_becomes_a_leader_sends_empty_appendentries(CuTest *
                 {(-1),&NODE_ID_3},
                 {(-1),NULL}};
 
-    msg_appendentries_t* ae;
+    MsgAppendEntries* ae;
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1393,9 +1405,9 @@ void TestRaft_leader_when_it_becomes_a_leader_sends_empty_appendentries(CuTest *
     r.become_leader();
 
     /* receive appendentries messages for both nodes */
-    ae = reinterpret_cast<msg_appendentries_t*>(sender_poll_msg_data(sender));
+    ae = reinterpret_cast<MsgAppendEntries*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != ae);
-    ae = reinterpret_cast<msg_appendentries_t*>(sender_poll_msg_data(sender));
+    ae = reinterpret_cast<MsgAppendEntries*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != ae);
 }
 
@@ -1458,7 +1470,7 @@ void TestRaft_leader_sends_appendentries_with_NextIdx_when_PrevIdx_gt_NextIdx(Cu
                 {(-1),NULL}};
 
 
-    msg_appendentries_t* ae;
+    MsgAppendEntries* ae;
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1473,7 +1485,7 @@ void TestRaft_leader_sends_appendentries_with_NextIdx_when_PrevIdx_gt_NextIdx(Cu
 
     /* receive appendentries messages */
     r.send_appendentries(0);
-    ae = reinterpret_cast<msg_appendentries_t*>(sender_poll_msg_data(sender));
+    ae = reinterpret_cast<MsgAppendEntries*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != ae);
 }
 
@@ -1494,7 +1506,7 @@ void TestRaft_leader_retries_appendentries_with_decremented_NextIdx_log_inconsis
                 {(-1),NULL}};
 
 
-    msg_appendentries_t* ae;
+    MsgAppendEntries* ae;
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1506,7 +1518,7 @@ void TestRaft_leader_retries_appendentries_with_decremented_NextIdx_log_inconsis
 
     /* receive appendentries messages */
     r.send_appendentries(0);
-    ae = reinterpret_cast<msg_appendentries_t*>(sender_poll_msg_data(sender));
+    ae = reinterpret_cast<MsgAppendEntries*>(sender_poll_msg_data(sender));
     CuAssertTrue(tc, NULL != ae);
 }
 
@@ -1634,7 +1646,7 @@ void TestRaft_leader_steps_down_if_received_appendentries_is_newer_than_itself(C
     r.set_current_idx(5);
     r.set_callbacks(&funcs,sender);
 
-    msg_appendentries_t ae(5,0,6,5,0,NULL,0);
+    MsgAppendEntries ae(5,0,6,5,0,0);
     r.recv_appendentries(1,&ae);
 
     CuAssertTrue(tc, 1 == r.get_state().is_follower());
