@@ -7,7 +7,7 @@
 
 class RaftLogger {
     
-    std::vector<raft_entry_t*> entries;
+    std::vector<raft_entry_t> entries;
 
     /**
      * @breif This function when called will ensure that we have enough capacity in the current logger state
@@ -27,12 +27,12 @@ class RaftLogger {
      *        Don't add entries with ID=0 
      * @return 0 if unsucessful; 1 otherwise 
      */
-    int log_append_entry(raft_entry_t* c);
+    int log_append_entry(const raft_entry_t& c);
 
     /**
      * @brief Retrieve the log entry with a give index
      */
-    raft_entry_t* log_get_from_idx(int idx);
+    raft_entry_t& log_get_from_idx(int idx);
 
     /**
      * @brief Get the log count held (Written) by this logger
@@ -47,7 +47,7 @@ class RaftLogger {
     /*
      * @return youngest entry 
      */
-    raft_entry_t *log_peektail();
+    raft_entry_t& log_peektail();
 
     /**
      * @brief Empty the queue. 

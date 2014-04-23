@@ -13,8 +13,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdexcept>
 
-/* for varags */
 #include <stdarg.h>
 
 #include "state_mach.h"
@@ -134,7 +134,7 @@ int RaftServer::periodic(int msec_since_last_period) {
 	return 1;
 }
 
-raft_entry_t *RaftServer::get_entry_from_idx(int etyidx) {
+raft_entry_t& RaftServer::get_entry_from_idx(int etyidx) {
 	return this->log->log_get_from_idx(etyidx);
 }
 
@@ -153,12 +153,10 @@ int RaftServer::recv_appendentries_response(int node, msg_appendentries_response
 			this->log->log_mark_node_has_committed(i);
 
 		while (1) {
-			raft_entry_t *e;
-
-			e = this->log->log_get_from_idx(this->last_applied_idx + 1);
+			raft_entry_t& e = this->log->log_get_from_idx(this->last_applied_idx + 1);
 
 			/* majority has this */
-			if (e && this->nodes.size() / 2 <= e->d_num_nodes) {
+			if (this->nodes.size() / 2 <= e.d_num_nodes) {
 				if (0 == apply_entry())
 					break;
 			} else {
@@ -199,26 +197,26 @@ int RaftServer::recv_appendentries(const int node, MsgAppendEntries *ae) {
 	}
 
 	/* not the first appendentries we've received */
-	if (0 != ae->getPrevLogIdx()) {
-		raft_entry_t *e;
-
-		if ((e = get_entry_from_idx(ae->getPrevLogIdx()))) {
+	if (ae->hasAnyLogs()) {
+		try {
+			raft_entry_t& e = get_entry_from_idx(ae->getPrevLogIdx());
 			/* 2. Reply false if log doesn�t contain an entry at prevLogIndex
 			 whose term matches prevLogTerm (�5.3) */
-			if (e->d_term != ae->getPrevLogTerm()) {
+			if (e.d_term != ae->getPrevLogTerm()) {
 				__log(NULL, "AE term doesn't match prev_idx");
 				r.success = 0;
 				goto done;
 			}
-
 			/* 3. If an existing entry conflicts with a new one (same index
 			 but different terms), delete the existing entry and all that
 			 follow it (�5.3) */
-			raft_entry_t *e2;
-			if ((e2 = get_entry_from_idx(ae->getPrevLogIdx() + 1))) {
+			try {
+				raft_entry_t& e2 = get_entry_from_idx(ae->getPrevLogIdx() + 1);
 				this->log->log_delete(ae->getPrevLogIdx() + 1);
+			} catch (std::runtime_error& err){
 			}
-		} else {
+
+		} catch (std::runtime_error& err) {
 			__log(NULL, "AE no log at prev_idx");
 			r.success = 0;
 			goto done;
@@ -229,12 +227,13 @@ int RaftServer::recv_appendentries(const int node, MsgAppendEntries *ae) {
 	/* 5. If leaderCommit > commitIndex, set commitIndex =
 	 min(leaderCommit, last log index) */
 	if (get_commit_idx() < ae->getLeaderCommit()) {
-		raft_entry_t *e;
-
-		if ((e = this->log->log_peektail())) {
-			set_commit_idx(e->d_id < ae->getLeaderCommit() ? e->d_id : ae->getLeaderCommit());
+		try {
+			const raft_entry_t& e = this->log->log_peektail();
+			set_commit_idx(e.d_id < ae->getLeaderCommit() ? e.d_id : ae->getLeaderCommit());
 			while (1 == apply_entry())
 				;
+		} catch (std::runtime_error& err) {
+
 		}
 	}
 
@@ -243,14 +242,12 @@ int RaftServer::recv_appendentries(const int node, MsgAppendEntries *ae) {
 
 	set_current_term(ae->getTerm());
 
-	int i;
-
 	/* append all entries to log */
-	for (i = 0; i < ae->getNEntries(); i++) {
+	for (int i = 0; i < ae->getNEntries(); i++) {
 		/* TODO: replace malloc with mempoll/arena */
-		raft_entry_t* c = new raft_entry_t();
-		c->d_term = this->current_term;
-		c->populateFromMsgEntry(ae->getEntry(i));
+		raft_entry_t c;
+		c.d_term = this->current_term;
+		c.populateFromMsgEntry(ae->getEntry(i));
 		if (0 == append_entry(c)) {
 			__log(NULL, "AE failure; couldn't append entry");
 			r.success = 0;
@@ -326,7 +323,7 @@ int RaftServer::send_entry_response(int node, int etyid, int was_committed) {
 int RaftServer::recv_entry(int node, msg_entry_t *e) {
 	raft_entry_t ety(this->current_term, e->id(), reinterpret_cast<char*>(e->data()), e->len());
 	__log(NULL, "received entry from: %d", node);
-	send_entry_response(node, e->id(), append_entry(&ety));
+	send_entry_response(node, e->id(), append_entry(ety));
 	forAllNodesExceptSelf(std::bind(&RaftServer::send_appendentries, this, std::placeholders::_1));
 	return 0;
 }
@@ -341,7 +338,7 @@ void RaftServer::send_requestvote(int node) {
 				sizeof(msg_requestvote_t));
 }
 
-int RaftServer::append_entry(raft_entry_t *c) {
+int RaftServer::append_entry(const raft_entry_t& c) {
 
 	if (1 == this->log->log_append_entry(c)) {
 		this->current_idx += 1;
@@ -351,10 +348,13 @@ int RaftServer::append_entry(raft_entry_t *c) {
 }
 
 int RaftServer::apply_entry() {
-	raft_entry_t *e;
+	raft_entry_t e;
 
-	if (!(e = this->log->log_get_from_idx(this->last_applied_idx + 1)))
+	try {
+		e = this->log->log_get_from_idx(this->last_applied_idx + 1);
+	} catch (std::runtime_error& err) {
 		return 0;
+	}
 
 	__log(NULL, "applying log: %d", this->last_applied_idx);
 
@@ -362,7 +362,7 @@ int RaftServer::apply_entry() {
 	if (get_commit_idx() < this->last_applied_idx)
 		set_commit_idx(this->last_applied_idx);
 	if (this->cb.applylog)
-		this->cb.applylog(this->cb_ctx, this, reinterpret_cast<const unsigned char*>(e->d_data), e->d_len);
+		this->cb.applylog(this->cb_ctx, this, reinterpret_cast<const unsigned char*>(e.d_data), e.d_len);
 	return 1;
 }
 

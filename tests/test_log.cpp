@@ -5,22 +5,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "CuTest.h"
+#include "gtest/gtest.h"
 
 #include "raft.h"
 #include "raft_msg.h"
 #include "raft_logger.h"
 #include "raft_private.h"
 
-void TestLog_new_is_empty(CuTest * tc)
+TEST(RaftLogger,new_is_empty)
 {
     RaftLogger *l;
 
     l = new RaftLogger();
-    CuAssertTrue(tc, 0 == l->log_count());
+    ASSERT_TRUE(0 == l->log_count());
 }
 
-void TestLog_append_is_not_empty(CuTest * tc)
+TEST(RaftLogger,append_is_not_empty)
 {
     RaftLogger *l;
     raft_entry_t e;
@@ -28,120 +28,120 @@ void TestLog_append_is_not_empty(CuTest * tc)
     e.d_id = 1;
 
     l = new RaftLogger();
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e));
-    CuAssertTrue(tc, 1 == l->log_count());
+    ASSERT_TRUE(1 == l->log_append_entry( e));
+    ASSERT_TRUE(1 == l->log_count());
 }
 
-void TestLog_get_at_idx(CuTest * tc)
+TEST(RaftLogger,get_at_idx)
 {
     RaftLogger *l;
     raft_entry_t e1, e2, e3;
 
     l = new RaftLogger();
     e1.d_id = 1;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e1));
+    ASSERT_TRUE(1 == l->log_append_entry( e1));
     e2.d_id = 2;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e2));
+    ASSERT_TRUE(1 == l->log_append_entry( e2));
     e3.d_id = 3;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e3));
-    CuAssertTrue(tc, 3 == l->log_count());
+    ASSERT_TRUE(1 == l->log_append_entry( e3));
+    ASSERT_TRUE(3 == l->log_count());
 
-    CuAssertTrue(tc, 3 == l->log_count());
-    CuAssertTrue(tc, e2.d_id == l->log_get_from_idx(2)->d_id);
+    ASSERT_TRUE(3 == l->log_count());
+    ASSERT_TRUE(e2.d_id == l->log_get_from_idx(2).d_id);
 }
 
-void TestLog_get_at_idx_returns_null_where_out_of_bounds(CuTest * tc)
+TEST(RaftLogger,get_at_idx_returns_null_where_out_of_bounds)
 {
     RaftLogger *l;
     raft_entry_t e1, e2, e3;
 
     l = new RaftLogger();
     e1.d_id = 1;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e1));
-    CuAssertTrue(tc, NULL == l->log_get_from_idx(2));
+    ASSERT_TRUE(1 == l->log_append_entry( e1));
+    ASSERT_THROW(l->log_get_from_idx(2),std::runtime_error);
 }
 
-void TestLog_mark_node_has_committed_adds_nodes(CuTest * tc)
+TEST(RaftLogger,mark_node_has_committed_adds_nodes)
 {
     RaftLogger *l;
     raft_entry_t e1, e2, e3;
 
     l = new RaftLogger();
     e1.d_id = 1;
-    l->log_append_entry( &e1);
-    CuAssertTrue(tc, 0 == l->log_get_from_idx(1)->d_num_nodes);
+    l->log_append_entry( e1);
+    ASSERT_TRUE(0 == l->log_get_from_idx(1).d_num_nodes);
     l->log_mark_node_has_committed( 1);
-    CuAssertTrue(tc, 1 == l->log_get_from_idx(1)->d_num_nodes);
+    ASSERT_TRUE(1 == l->log_get_from_idx(1).d_num_nodes);
     l->log_mark_node_has_committed( 1);
-    CuAssertTrue(tc, 2 == l->log_get_from_idx(1)->d_num_nodes);
+    ASSERT_TRUE(2 == l->log_get_from_idx(1).d_num_nodes);
 }
 
-void TestLog_delete(CuTest * tc)
+TEST(RaftLogger,delete)
 {
     RaftLogger *l;
     raft_entry_t e1, e2, e3;
 
     l = new RaftLogger();
     e1.d_id = 1;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e1));
+    ASSERT_TRUE(1 == l->log_append_entry( e1));
     e2.d_id = 2;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e2));
+    ASSERT_TRUE(1 == l->log_append_entry( e2));
     e3.d_id = 3;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e3));
-    CuAssertTrue(tc, 3 == l->log_count());
+    ASSERT_TRUE(1 == l->log_append_entry( e3));
+    ASSERT_TRUE(3 == l->log_count());
 
     l->log_delete(3);
-    CuAssertTrue(tc, 2 == l->log_count());
-    CuAssertTrue(tc, NULL == l->log_get_from_idx(3));
+    ASSERT_TRUE(2 == l->log_count());
+    ASSERT_THROW(l->log_get_from_idx(3),std::runtime_error);
     l->log_delete(2);
-    CuAssertTrue(tc, 1 == l->log_count());
-    CuAssertTrue(tc, NULL == l->log_get_from_idx(2));
+    ASSERT_TRUE(1 == l->log_count());
+    ASSERT_THROW(l->log_get_from_idx(2),std::runtime_error);
     l->log_delete(1);
-    CuAssertTrue(tc, 0 == l->log_count());
-    CuAssertTrue(tc, NULL == l->log_get_from_idx(1));
+    ASSERT_TRUE(0 == l->log_count());
+    ASSERT_THROW(l->log_get_from_idx(1),std::runtime_error);
 }
 
-void TestLog_delete_onwards(CuTest * tc)
+TEST(RaftLogger,delete_onwards)
 {
     RaftLogger *l;
     raft_entry_t e1, e2, e3;
 
     l = new RaftLogger();
     e1.d_id = 1;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e1));
+    ASSERT_TRUE(1 == l->log_append_entry( e1));
     e2.d_id = 2;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e2));
+    ASSERT_TRUE(1 == l->log_append_entry( e2));
     e3.d_id = 3;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e3));
-    CuAssertTrue(tc, 3 == l->log_count());
+    ASSERT_TRUE(1 == l->log_append_entry( e3));
+    ASSERT_TRUE(3 == l->log_count());
 
     /* even 3 gets deleted */
     l->log_delete(2);
-    CuAssertTrue(tc, 1 == l->log_count());
-    CuAssertTrue(tc, e1.d_id == l->log_get_from_idx(1)->d_id);
-    CuAssertTrue(tc, NULL == l->log_get_from_idx(2));
-    CuAssertTrue(tc, NULL == l->log_get_from_idx(3));
+    ASSERT_TRUE(1 == l->log_count());
+    ASSERT_TRUE(e1.d_id == l->log_get_from_idx(1).d_id);
+    ASSERT_THROW(l->log_get_from_idx(2),std::runtime_error);
+    ASSERT_THROW(l->log_get_from_idx(3),std::runtime_error);
 }
 
-void TestLog_peektail(CuTest * tc)
+TEST(RaftLogger,peektail)
 {
     RaftLogger *l;
     raft_entry_t e1, e2, e3;
 
     l = new RaftLogger();
     e1.d_id = 1;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e1));
+    ASSERT_TRUE(1 == l->log_append_entry( e1));
     e2.d_id = 2;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e2));
+    ASSERT_TRUE(1 == l->log_append_entry( e2));
     e3.d_id = 3;
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e3));
-    CuAssertTrue(tc, 3 == l->log_count());
-    CuAssertTrue(tc, e3.d_id == l->log_peektail()->d_id);
+    ASSERT_TRUE(1 == l->log_append_entry( e3));
+    ASSERT_TRUE(3 == l->log_count());
+    ASSERT_TRUE(e3.d_id == l->log_peektail().d_id);
 }
 
 #if 0
 // TODO: duplicate testing not implemented yet
-void T_estlog_cant_append_duplicates(CuTest * tc)
+void T_estlog_cant_append_duplicates()
 {
     RaftLogger *l;
     raft_entry_t e;
@@ -149,8 +149,8 @@ void T_estlog_cant_append_duplicates(CuTest * tc)
     e.d_id = 1;
 
     l = new RaftLogger();
-    CuAssertTrue(tc, 1 == l->log_append_entry( &e));
-    CuAssertTrue(tc, 1 == l->log_count());
+    ASSERT_TRUE(1 == l->log_append_entry( &e));
+    ASSERT_TRUE(1 == l->log_count());
 }
 #endif
 

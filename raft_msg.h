@@ -215,6 +215,10 @@ public:
 		return d_prev_log_idx;
 	}
 
+	bool hasAnyLogs() const {
+		return d_prev_log_idx != 0;
+	}
+
 	void setPrevLogIdx(int prevLogIdx) {
 		d_prev_log_idx = prevLogIdx;
 	}

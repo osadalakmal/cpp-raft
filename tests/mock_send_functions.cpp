@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <deque>
-#include "CuTest.h"
+#include "gtest/gtest.h"
 
 #include "raft.h"
 #include "raft_server.h"

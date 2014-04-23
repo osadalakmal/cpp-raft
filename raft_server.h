@@ -95,7 +95,7 @@ public:
 	/**
 	 * @param idx The entry's index
 	 * @return entry from index */
-	raft_entry_t* get_entry_from_idx(int etyidx);
+	raft_entry_t& get_entry_from_idx(int etyidx);
 
 	/**
 	 * Receive a response from an appendentries message we sent
@@ -135,7 +135,7 @@ public:
 
 	void send_requestvote(int node);
 
-	int append_entry(raft_entry_t* c);
+	int append_entry(const raft_entry_t& c);
 
 	int apply_entry();
 

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "CuTest.h"
+#include "gtest/gtest.h"
 
 #include "raft.h"
 #include "raft_server.h"
@@ -17,7 +17,7 @@ static int NODE_ID_1 = 1;
 static int NODE_ID_2 = 2;
 static int NODE_ID_3 = 3;
 
-void TestRaft_scenario_leader_appears(CuTest * tc)
+TEST(RaftScenario,leader_appears)
 {
     int i,j;
     RaftServer *r[3];
@@ -65,7 +65,7 @@ void TestRaft_scenario_leader_appears(CuTest * tc)
             leaders += 1;
     }
 
-    CuAssertTrue(tc, 0 != leaders);
-    CuAssertTrue(tc, 1 == leaders);
+    ASSERT_TRUE(0 != leaders);
+    ASSERT_TRUE(1 == leaders);
 }
 
