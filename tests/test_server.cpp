@@ -203,7 +203,14 @@ TEST(RaftServer,wont_apply_entry_if_we_dont_have_entry_to_apply)
     raft_entry_t *ety_appended;
     char* str = const_cast<char*>("aaa");
 
+    void *sender = sender_new(NULL);
+    raft_cbs_t funcs = {
+        sender_send,
+        NULL
+    };
     RaftServer r;
+    r.set_callbacks(&funcs,sender);
+
     r.set_commit_idx(0);
     r.set_last_applied_idx(0);
 
@@ -987,7 +994,13 @@ TEST(RaftFollower,becoming_candidate_resets_election_timeout)
 
 TEST(RaftFollower,receiving_appendentries_resets_election_timeout)
 {
+    raft_cbs_t funcs = {
+        sender_send,
+        NULL
+    };
+    void* sender = sender_new(NULL);
     RaftServer r;
+    r.set_callbacks(&funcs,sender);
     r.set_election_timeout(1000);
 
     r.periodic(900);
@@ -1476,9 +1489,15 @@ TEST(RaftLeader,append_entry_to_log_increases_idxno)
 
 
     msg_entry_t ety(1,(unsigned char*)"entry",strlen("entry"));
+    void *sender = sender_new(NULL);
+    raft_cbs_t funcs = {
+        sender_send,
+        NULL
+    };
 
     RaftServer r;
     r.set_configuration(cfg,0);
+    r.set_callbacks(&funcs,sender);
     r.get_state().set(RAFT_STATE_LEADER);
     ASSERT_TRUE(0 == r.get_log_count());
 
