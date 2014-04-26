@@ -1,6 +1,8 @@
 #ifndef INCLUDED_RAFT_H
 #define INCLUDED_RAFT_H
 
+#include <boost/any.hpp>
+
 /**
  * Copyright (c) 2013, Willem-Hendrik Thiart
  * Use of this source code is governed by a BSD-style license that can be
@@ -17,11 +19,11 @@ typedef struct {
      * configuration changes */
     int old_id;
 
-    /** User data pointer for addressing.
+    /** User data for addressing.
      * Examples of what this could be:
      * - void* pointing to implementor's networking data
      * - a (IP,Port) tuple */
-    int* udata_address;
+    boost::any userData;
 } raft_node_configuration_t;
 
 

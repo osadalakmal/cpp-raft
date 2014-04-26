@@ -6,7 +6,7 @@
 #include "raft.h"
 #include "raft_node.h"
 
-RaftNode::RaftNode(void* udata) : d_udata(udata)
+RaftNode::RaftNode(const boost::any& udata) : d_udata(udata), next_idx(0)
 { }
 
 int RaftNode::is_leader()
@@ -25,7 +25,7 @@ void RaftNode::set_next_idx(int nextIdx)
     next_idx = nextIdx;
 }
 
-void* RaftNode::get_udata()
+boost::any& RaftNode::get_udata()
 {
     return d_udata;
 }
