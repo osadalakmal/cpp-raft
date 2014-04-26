@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>CRaft</name>
+	<name>cpp-raft</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -26,7 +26,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1398207197531</id>
+			<id>0</id>
 			<name></name>
 			<type>6</type>
 			<matcher>
