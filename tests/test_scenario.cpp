@@ -22,7 +22,7 @@ TEST(RaftScenario,leader_appears)
     int i,j;
     RaftServer *r[3];
     void* sender[3];
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
                 {(-1),&NODE_ID_2},
                 {(-1),&NODE_ID_3},
@@ -33,7 +33,7 @@ TEST(RaftScenario,leader_appears)
     for (j=0;j<3;j++)
     {
         r[j] = new RaftServer();
-        sender[j] = sender_new(cfg[j].udata_address);
+        sender[j] = sender_new(NULL);
         sender_set_raft(sender[j], r[j]);
         r[j]->set_election_timeout(500);
         r[j]->set_configuration(cfg,j);

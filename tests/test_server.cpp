@@ -316,10 +316,9 @@ TEST(RaftServer,election_timeout_sets_to_zero_when_elapsed_time_greater_than_tim
 TEST(RaftServer,cfg_sets_num_nodes)
 {
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
     RaftServer r;
     r.set_configuration(cfg,0);
 
@@ -329,10 +328,9 @@ TEST(RaftServer,cfg_sets_num_nodes)
 TEST(RaftServer,cant_get_node_we_dont_have)
 {
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -368,10 +366,9 @@ TEST(RaftServer,dont_increase_votes_for_me_when_receive_request_vote_response_is
     msg_requestvote_response_t rvr;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -391,10 +388,9 @@ TEST(RaftServer,increase_votes_for_me_when_receive_request_vote_response)
     msg_requestvote_response_t rvr;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -421,10 +417,9 @@ TEST(RaftServer,recv_requestvote_reply_false_if_term_less_than_current_term)
     msg_requestvote_response_t *rvr;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -453,10 +448,9 @@ TEST(RaftServer,dont_grant_vote_if_we_didnt_vote_for_this_candidate)
     msg_requestvote_response_t *rvr;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     sender = sender_new(NULL);
@@ -501,10 +495,9 @@ TEST(RaftFollower,recv_appendentries_reply_false_if_term_less_than_currentterm)
     msg_appendentries_response_t *aer;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     RaftServer r;
@@ -538,10 +531,9 @@ TEST(RaftFollower,recv_appendentries_updates_currentterm_if_term_gt_currentterm)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -567,10 +559,9 @@ TEST(RaftFollower,recv_appendentries_updates_currentterm_if_term_gt_currentterm)
 TEST(RaftFollower,doesnt_log_after_appendentry_if_no_entries_are_specified)
 {
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -604,10 +595,9 @@ TEST(RaftFollower,increases_log_after_appendentry)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -645,10 +635,9 @@ TEST(RaftFollower,recv_appendentries_reply_false_if_doesnt_have_log_at_prev_log_
         NULL
     };
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     msg_appendentries_response_t *aer;
 
@@ -690,10 +679,9 @@ TEST(RaftFollower,recv_appendentries_delete_entries_if_conflict_with_new_entries
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -752,10 +740,9 @@ TEST(RaftFollower,recv_appendentries_add_new_entries_not_already_in_log)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     RaftServer r;
@@ -793,10 +780,9 @@ TEST(RaftFollower,recv_appendentries_set_commitidx_to_prevLogIdx)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -843,10 +829,9 @@ TEST(RaftFollower,recv_appendentries_set_commitidx_to_LeaderCommit)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -887,10 +872,9 @@ TEST(RaftFollower,recv_appendentries_set_commitidx_to_LeaderCommit)
 TEST(RaftFollower,becomes_candidate_when_election_timeout_occurs)
 {
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     RaftServer r;
     raft_cbs_t funcs = {
@@ -923,10 +907,9 @@ TEST(RaftFollower,dont_grant_vote_if_candidate_has_a_less_complete_log)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     msg_requestvote_t rv(1,1,1,1);
@@ -1020,11 +1003,10 @@ TEST(RaftFollower,becoming_candidate_requests_votes_from_other_servers)
         sender_send,
         NULL
     };
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
                 {(-1),&NODE_ID_2},
-                {(-1),&NODE_ID_3},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_3}};
     msg_requestvote_t* rv;
 
     sender = sender_new(NULL);
@@ -1061,10 +1043,9 @@ TEST(RaftCandidate,election_timeout_and_no_leader_results_in_new_election)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     msg_requestvote_response_t vr;
 
@@ -1103,13 +1084,12 @@ TEST(RaftCandidate,receives_majority_of_votes_becomes_leader)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
                 {(-1),&NODE_ID_2},
                 {(-1),&NODE_ID_3},
                 {(-1),&NODE_ID_4},
-                {(-1),&NODE_ID_5},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_5}};
 
     msg_requestvote_response_t vr;
 
@@ -1152,10 +1132,9 @@ TEST(RaftCandidate,will_not_respond_to_voterequest_if_it_has_already_voted)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     msg_requestvote_response_t* rvr;
     msg_requestvote_t rv(0,0,0,0);
@@ -1187,10 +1166,9 @@ TEST(RaftCandidate,requestvote_includes_logidx)
     msg_requestvote_t* rv;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1220,10 +1198,9 @@ TEST(RaftCandidate,recv_appendentries_frm_leader_results_in_follower)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
 
@@ -1251,10 +1228,9 @@ TEST(RaftCandidate,recv_appendentries_frm_invalid_leader_doesnt_result_in_follow
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1304,11 +1280,10 @@ TEST(RaftLeader,when_becomes_leader_all_nodes_have_nextidx_equal_to_lastlog_idx_
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
                 {(-1),&NODE_ID_2},
-                {(-1),&NODE_ID_3},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_3}};
 
     MsgAppendEntries* ae;
 
@@ -1340,11 +1315,10 @@ TEST(RaftLeader,when_it_becomes_a_leader_sends_empty_appendentries)
         NULL
     };
 
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
                 {(-1),&NODE_ID_2},
-                {(-1),&NODE_ID_3},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_3}};
 
     MsgAppendEntries* ae;
 
@@ -1377,10 +1351,9 @@ TEST(RaftLeader,responds_to_entry_msg_when_entry_is_committed)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
     RaftServer r;
@@ -1417,10 +1390,9 @@ TEST(RaftLeader,sends_appendentries_with_NextIdx_when_PrevIdx_gt_NextIdx)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     MsgAppendEntries* ae;
@@ -1453,10 +1425,9 @@ TEST(RaftLeader,retries_appendentries_with_decremented_NextIdx_log_inconsistency
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     MsgAppendEntries* ae;
@@ -1482,10 +1453,9 @@ TEST(RaftLeader,retries_appendentries_with_decremented_NextIdx_log_inconsistency
 TEST(RaftLeader,append_entry_to_log_increases_idxno)
 {
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
 
     msg_entry_t ety(1,(unsigned char*)"entry",strlen("entry"));
@@ -1516,10 +1486,9 @@ TEST(RaftLeader,increase_commit_idx_when_majority_have_entry_and_atleast_one_new
     msg_appendentries_response_t aer;
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
     sender = sender_new(NULL);
     RaftServer r;
     r.set_configuration(cfg,0);
@@ -1589,10 +1558,9 @@ TEST(RaftLeader,steps_down_if_received_appendentries_is_newer_than_itself)
     };
 
     /* 2 nodes */
-    raft_node_configuration_t cfg[] = {
+    std::vector<raft_node_configuration_t> cfg  = {
                 {(-1),&NODE_ID_1},
-                {(-1),&NODE_ID_2},
-                {(-1),NULL}};
+                {(-1),&NODE_ID_2}};
 
     sender = sender_new(NULL);
     RaftServer r;

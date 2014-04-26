@@ -5,7 +5,7 @@
  *
  * @file
  * @brief Implementation of a Raft server
- * @author Willem Thiart himself@willemthiart.com
+ * @author Willem Thiart
  * @version 0.1
  */
 
@@ -44,7 +44,6 @@ void RaftServer::set_callbacks(raft_cbs_t *funcs, void *cb_ctx) {
 }
 
 RaftServer::~RaftServer() {
-	delete this->log;
 }
 
 void RaftServer::forAllNodesExceptSelf(std::function<void(int)> callback) {
@@ -384,24 +383,27 @@ void RaftServer::send_appendentries_all() {
 	forAllNodesExceptSelf(&RaftServer::send_appendentries);
 }
 
-void RaftServer::set_configuration(raft_node_configuration_t *nodes, int my_idx) {
-	raft_node_configuration_t* nodeIdx = nodes;
+void RaftServer::set_configuration(std::vector<raft_node_configuration_t> nodes, int my_idx) {
 	this->nodes.clear();
-	while (nodeIdx->udata_address) {
-		this->nodes.push_back(*reinterpret_cast<raft_node_t*>(nodeIdx->udata_address));
-		nodeIdx++;
+	for (int i=0; i<nodes.size(); i++) {
+		this->nodes.push_back(RaftNode(nodes[i].userData));
+		this->votes_for_me.push_back(int(0));
 	}
-	this->votes_for_me.reserve(this->nodes.size());
 	this->nodeid = my_idx;
 }
 
 int RaftServer::get_nvotes_for_me() {
 	int votes = 0;
-
-	forAllNodesExceptSelf([this,votes](int i) mutable {
-		if (1 == this->votes_for_me[i])
-		votes += 1;
-	});
+	const std::vector<int>& votes_for_me = this->votes_for_me;
+	for (int i = 0; i < this->nodes.size(); i++) {
+		if (this->nodeid == i) {
+			continue;
+		} else {
+			if (1 == this->votes_for_me[i]) {
+				votes += 1;
+			}
+		}
+	}
 
 	if (this->voted_for == this->nodeid)
 		votes += 1;

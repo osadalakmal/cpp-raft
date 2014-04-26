@@ -5,9 +5,10 @@
 #include "raft.h"
 #include "raft_msg.h"
 #include <cstddef>
-//#include <boost/optional>
+
 #include <functional>
 #include <vector>
+#include <memory>
 
 class RaftLogger;
 class RaftNode;
@@ -23,7 +24,7 @@ class RaftServer {
 	int voted_for;
 
 	/// the log which is replicated
-	RaftLogger* log;
+	std::shared_ptr<RaftLogger> log;
 
 	/* Volatile state: */
 	/// idx of highest log entry known to be committed
@@ -146,7 +147,7 @@ public:
 	 * Set configuration
 	 * @param nodes Array of nodes, end of array is marked by NULL entry
 	 * @param my_idx Which node is myself */
-	void set_configuration(raft_node_configuration_t* nodes, int my_idx);
+	void set_configuration(std::vector<raft_node_configuration_t> nodes, int my_idx);
 
 	/**
 	 * @return number of votes this server has received this election */
