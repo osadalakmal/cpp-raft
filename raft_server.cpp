@@ -34,7 +34,7 @@ static void __log(void *src, const char *fmt, ...) {
 
 RaftServer::RaftServer() :
 		current_term(0), voted_for(-1), current_idx(1), timeout_elapsed(0), request_timeout(200), election_timeout(
-				1000), last_applied_idx(0), log(new RaftLogger()), commit_idx(0), nodeid(0), cb_ctx(NULL) {
+				1000), last_applied_idx(0), log(new RaftLogger()), commit_idx(0), votes_for_me(), nodeid(0), cb_ctx(NULL) {
 	d_state.set(RAFT_STATE_FOLLOWER);
 }
 
@@ -396,7 +396,7 @@ void RaftServer::set_configuration(raft_node_configuration_t *nodes, int my_idx)
 }
 
 int RaftServer::get_nvotes_for_me() {
-	int votes;
+	int votes = 0;
 
 	forAllNodesExceptSelf([this,votes](int i) mutable {
 		if (1 == this->votes_for_me[i])
