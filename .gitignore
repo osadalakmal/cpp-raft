@@ -4,3 +4,5 @@
 *.pyc
 *.gcda
 *.gcno
+*.bak
+*.d
