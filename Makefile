@@ -1,24 +1,46 @@
-TEST_DIR = ./tests
-
-GCOV_OUTPUT = *.gcda *.gcno *.gcov 
-GCOV_CCFLAGS = -fprofile-arcs -ftest-coverage
-SHELL  = /bin/bash
-CC     = g++
-CCFLAGS = -g -O0 $(GCOV_CCFLAGS) -I./ -w -fpermissive -fno-inline-functions --std=c++0x -I/home/osada/progs/gtest-1.7.0/include \
-		   -L/home/osada/progs/gtest-1.7.0/lib/.libs/ -Wl,-rpath -Wl,/home/osada/progs/gtest-1.7.0/lib/.libs/ -lgtest -lpthread \
+CXX:=g++
+CC:=gcc
+LIBRARY_PATH=$(shell echo "/usr/lib/$(gcc -print-multiarch)")
+C_INCLUDE_PATH=$(shell echo "/usr/include/$(gcc -print-multiarch)")
+CPLUS_INCLUDE_PATH=$(shell echo "/usr/include/$(gcc -print-multiarch)")
+LDFLAGS := -L/home/osada/progs/gtest-1.7.0/lib/.libs/ -Wl,-rpath -Wl,/home/osada/progs/gtest-1.7.0/lib/.libs/ -lgtest -lpthread \
 		   -Wl,-rpath -Wl,/usr/local/lib
-SRCS = state_mach.cpp raft_server.cpp raft_logger.cpp raft_node.cpp $(TEST_DIR)/main_test.cpp $(TEST_DIR)/test_server.cpp \
-		$(TEST_DIR)/test_node.cpp $(TEST_DIR)/test_log.cpp $(TEST_DIR)/test_scenario.cpp $(TEST_DIR)/mock_send_functions.cpp
+LD = g++
+CFLAGS = -g -Wall -I./
+CPPFLAGS = -g -O0 -I./ -w -fpermissive -fno-inline-functions --std=c++0x -I/home/osada/progs/boost_1_55_0 -I/home/osada/progs/gtest-1.7.0/include \
+		   
+RM = /bin/rm -f
+SRCS = $(wildcard *.cpp) $(wildcard tests/*.cpp)  
+OBJS = $(patsubst %.cpp,%.o,$(patsubst %.c,%.o ,$(SRCS)))
+DEPS = $(OBJS:.o=.d)
+PROG = tests_main
+-include $(DEPS)
 
-all: tests_main
+all: $(PROG)
 
-$(TEST_DIR)/main_test.c:
-	cd $(TEST_DIR) && sh make-tests.sh "test_*.c" > main_test.c && cd ..
+$(PROG): $(OBJS)
+	$(LD) $(OBJS) -o $(PROG) $(LDFLAGS)
 
-tests_main: $(SRCS)
-	$(CC) -o $@ $^ $(CCFLAGS)
-	#./tests_main
+%.o: %.cpp
+	$(CXX) -c $(CPPFLAGS) $< -o $*.o
+	$(CXX) -MM $(CPPFLAGS) $< > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
+	
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $*.o
+	$(CC) -MM $(CFLAGS) $< > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
+
+tests: $(PROG)
+	./$(PROG)
 
 clean:
-	rm -f $(TEST_DIR)/main_test.c *.o $(GCOV_OUTPUT) tests_main
-
+	$(RM) $(PROG) $(OBJS) $(DEPS)
