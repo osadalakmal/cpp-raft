@@ -1,38 +1,252 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>cpp-raft</name>
+	<name>cpp_raft-Debug@cpp-raft</name>
 	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
 		<buildCommand>
-			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<name>org.eclipse.cdt.make.core.makeBuilder</name>
 			<triggers>clean,full,incremental,</triggers>
 			<arguments>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>
+					<value>clean</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableCleanBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.append_environment</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.stopOnError</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enabledIncrementalBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.command</key>
+					<value>/usr/bin/make</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.contents</key>
+					<value>org.eclipse.cdt.make.core.activeConfigSettings</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.inc</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.arguments</key>
+					<value>-j2</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildLocation</key>
+					<value>/home/osada/progs/cpp-raft</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.environment</key>
+					<value>VERBOSE=1|CMAKE_NO_VERBOSE=1|</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableFullBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.auto</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableAutoBuild</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.clean</key>
+					<value>clean</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildArguments</key>
+					<value></value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.location</key>
+					<value>/home/osada/progs/cpp-raft</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.autoBuildTarget</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.core.errorOutputParser</key>
+					<value>org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser;</value>
+				</dictionary>
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
-			<triggers>full,incremental,</triggers>
+			<name>org.eclipse.cdt.make.core.ScannerConfigBuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.cdt.core.cnature</nature>
 		<nature>org.eclipse.cdt.core.ccnature</nature>
-		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
-		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+		<nature>org.eclipse.cdt.make.core.makeNature</nature>
+		<nature>org.eclipse.cdt.make.core.ScannerConfigNature</nature>
+		<nature>org.eclipse.cdt.core.cnature</nature>
 	</natures>
-	<filteredResources>
-		<filter>
-			<id>0</id>
-			<name></name>
-			<type>6</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-false-*.gc*</arguments>
-			</matcher>
-		</filter>
-	</filteredResources>
+	<linkedResources>
+		<link>
+			<name>[Subprojects]</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/main_test.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/main_test.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/mock_send_functions.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/mock_send_functions.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/test_log.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/test_log.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/test_node.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/test_node.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/test_scenario.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/test_scenario.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/test_server.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/test_server.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/raft_logger.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_logger.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/raft_node.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_node.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/raft_server.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_server.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/raft_server_properties.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_server_properties.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Source Files/state_mach.cpp</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/state_mach.cpp</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/mock_send_functions.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/tests/mock_send_functions.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/raft.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/raft_logger.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_logger.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/raft_msg.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_msg.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/raft_node.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_node.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/raft_private.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_private.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/raft_server.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/raft_server.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Header Files/state_mach.h</name>
+			<type>1</type>
+			<location>/home/osada/progs/cpp-raft/state_mach.h</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] cpp_raft/Object Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

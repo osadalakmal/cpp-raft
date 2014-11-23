@@ -24,6 +24,8 @@
 #include "raft_node.h"
 #include "raft_private.h"
 
+#include <iostream>
+
 static void __log(void *src, const char *fmt, ...) {
 	char buf[1024];
 	va_list args;
@@ -147,17 +149,20 @@ int RaftServer::recv_appendentries_response(int node, msg_appendentries_response
 
 	if (1 == r->success) {
 		int i;
-
+		std::cout << "INcrease Success" << std::endl;
+		p->set_next_idx(r->current_idx);
 		for (i = r->first_idx; i <= r->current_idx; i++)
 			this->log->log_mark_node_has_committed(i);
 
-		while (1) {
+		while (this->get_commit_idx() < r->current_idx) {
 			raft_entry_t& e = this->log->log_get_from_idx(this->last_applied_idx + 1);
-
 			/* majority has this */
 			if (this->nodes.size() / 2 <= e.d_num_nodes) {
-				if (0 == apply_entry())
-					break;
+				if (1 != apply_entry())
+					throw std::runtime_error("Could Not Apply!");
+				if (e.getId() == r->current_idx) {
+					return 1;
+				}
 			} else {
 				break;
 			}
@@ -229,6 +234,7 @@ int RaftServer::recv_appendentries(const int node, MsgAppendEntries *ae) {
 		try {
 			const raft_entry_t& e = this->log->log_peektail();
 			set_commit_idx(e.d_id < ae->getLeaderCommit() ? e.d_id : ae->getLeaderCommit());
+			set_last_applied_idx(e.d_id < ae->getLeaderCommit() ? e.d_id : ae->getLeaderCommit());
 			while (1 == apply_entry())
 				;
 		} catch (std::runtime_error& err) {

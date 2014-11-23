@@ -20,6 +20,6 @@
 #include "raft.h"
 #include "raft_logger.h"
 #include "raft_private.h"
-#include "raft_server_properties.h"
+//#include "raft_server_properties.h"
 
 
